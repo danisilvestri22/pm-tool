@@ -41,8 +41,7 @@ create table push_subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   subscription jsonb not null,
-  created_at timestamptz not null default now(),
-  unique(user_id, (subscription->>'endpoint'))
+  created_at timestamptz not null default now()
 );
 
 -- Trigger: update tasks.updated_at automatically
@@ -59,6 +58,7 @@ create trigger tasks_updated_at
   for each row execute function update_updated_at();
 
 -- Indexes for common query patterns
+create unique index on push_subscriptions (user_id, (subscription->>'endpoint'));
 create index on tasks (company_id);
 create index on tasks (parent_task_id) where parent_task_id is not null;
 create index on tasks (deleted_at) where deleted_at is not null;
