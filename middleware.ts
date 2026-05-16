@@ -52,6 +52,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Redirect authenticated users away from the login page
+  if (user && pathname === '/login') {
+    const homeUrl = request.nextUrl.clone()
+    homeUrl.pathname = '/'
+    return NextResponse.redirect(homeUrl)
+  }
+
   return supabaseResponse
 }
 

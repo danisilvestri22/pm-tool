@@ -58,6 +58,12 @@ create trigger tasks_updated_at
   before update on tasks
   for each row execute function update_updated_at();
 
+-- Indexes for common query patterns
+create index on tasks (company_id);
+create index on tasks (parent_task_id) where parent_task_id is not null;
+create index on tasks (deleted_at) where deleted_at is not null;
+create index on tasks (followup_date) where followup_date is not null;
+
 -- Row Level Security
 alter table companies enable row level security;
 alter table tasks enable row level security;
@@ -77,16 +83,5 @@ create policy "authenticated full access" on share_links
 create policy "own push subscriptions" on push_subscriptions
   for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- Public read access for share link viewers
-create policy "public share link read" on tasks
-  for select to anon
-  using (
-    exists (
-      select 1 from share_links
-      where active = true
-      and (company_id = tasks.company_id or company_id is null)
-    )
-  );
-
-create policy "public share link read" on share_links
-  for select to anon using (active = true);
+-- Note: share page reads are handled server-side via the admin/service-role client,
+-- which bypasses RLS securely. No anon policies are needed.

@@ -37,3 +37,10 @@ export interface ShareLink {
   active: boolean
   created_at: string
 }
+
+export interface PushSubscriptionRecord {
+  id: string
+  user_id: string
+  subscription: Record<string, unknown>
+  created_at: string
+}
