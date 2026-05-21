@@ -1,7 +1,10 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import StatusBadge from './StatusBadge'
+import { updateTask } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
+
+const KNOWN_NAMES = ['Dani', 'Mike', 'Rick Sr', 'Rick Jr', 'Renato', 'Vitor']
 
 interface Props {
   task: Task
@@ -12,26 +15,50 @@ interface Props {
 }
 
 export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, onSelect }: Props) {
-  const isOverdue =
-    task.due_date &&
-    task.status !== 'completed' &&
-    new Date(task.due_date) < new Date()
+  const [vals, setVals] = useState({
+    responsible: task.responsible ?? '',
+    status: task.status,
+    due_date: task.due_date ?? '',
+    followup_date: task.followup_date ?? '',
+    waiting_on: task.waiting_on ?? '',
+  })
+
+  useEffect(() => {
+    setVals({
+      responsible: task.responsible ?? '',
+      status: task.status,
+      due_date: task.due_date ?? '',
+      followup_date: task.followup_date ?? '',
+      waiting_on: task.waiting_on ?? '',
+    })
+  }, [task])
+
+  async function save(field: string, value: string) {
+    const fd = new FormData()
+    fd.set(field, value)
+    await updateTask(task.id, fd)
+  }
+
+  const isOverdue = vals.due_date && vals.status !== 'completed' && new Date(vals.due_date) < new Date()
+
+  const selectClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-indigo-400 cursor-pointer max-w-full'
+  const dateClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-indigo-400 cursor-pointer w-[120px]'
+
+  const statusColor =
+    vals.status === 'completed' ? 'text-green-700' :
+    vals.status === 'at_risk' ? 'text-red-600' :
+    'text-blue-700'
 
   return (
-    <button
-      onClick={() => onSelect(task)}
-      className={`w-full text-left border-l-2 hover:bg-gray-50 transition-colors ${
-        task.status === 'at_risk' ? 'border-red-400 bg-red-50/30' : 'border-transparent'
-      }`}
-    >
-      {/* Mobile layout */}
-      <div className="flex items-center gap-3 px-4 py-3 sm:hidden">
+    <div className={`w-full border-l-2 transition-colors ${
+      vals.status === 'at_risk' ? 'border-red-400 bg-red-50/30' : 'border-transparent hover:bg-gray-50/50'
+    }`}>
+      {/* Mobile layout — tap row to open panel */}
+      <div className="flex items-center gap-3 px-4 py-3 sm:hidden" onClick={() => onSelect(task)}>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900 truncate text-sm">
             {task.name}
-            {subtaskCount > 0 && (
-              <span className="ml-1.5 text-xs text-gray-400 font-normal">({subtaskCount})</span>
-            )}
+            {subtaskCount > 0 && <span className="ml-1.5 text-xs text-gray-400 font-normal">({subtaskCount})</span>}
           </p>
           {(task.responsible || showCompany) && (
             <p className="text-xs text-gray-500 truncate mt-0.5">
@@ -41,10 +68,16 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <StatusBadge status={task.status} />
-          {task.due_date && (
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+            vals.status === 'completed' ? 'bg-green-100 text-green-700' :
+            vals.status === 'at_risk' ? 'bg-red-100 text-red-700' :
+            'bg-blue-100 text-blue-700'
+          }`}>
+            {vals.status === 'on_track' ? 'On track' : vals.status === 'at_risk' ? 'At risk' : 'Done'}
+          </span>
+          {vals.due_date && (
             <span className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-              {format(new Date(task.due_date), 'MMM d')}
+              {format(new Date(vals.due_date), 'MMM d')}
             </span>
           )}
         </div>
@@ -52,34 +85,91 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
       {/* Desktop layout */}
       <div
-        className="hidden sm:grid items-center gap-3 px-4 py-3 text-sm"
+        className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm"
         style={{
           gridTemplateColumns: showCompany
-            ? '2fr 1fr 1fr 90px 80px 80px 90px'
-            : '2fr 1fr 90px 80px 80px 90px',
+            ? '2fr 1fr 1fr 110px 120px 120px 120px'
+            : '2fr 1fr 110px 120px 120px 120px',
         }}
       >
-        <span className="font-medium text-gray-900 truncate">
+        {/* Task name — click opens detail panel */}
+        <button
+          onClick={() => onSelect(task)}
+          className="font-medium text-gray-900 truncate text-left hover:text-indigo-600 transition-colors py-1"
+        >
           {task.name}
           {subtaskCount > 0 && (
-            <span className="ml-1.5 text-xs text-gray-400 font-normal">
-              ({subtaskCount})
-            </span>
+            <span className="ml-1.5 text-xs text-gray-400 font-normal">({subtaskCount})</span>
           )}
-        </span>
+        </button>
+
         {showCompany && (
-          <span className="text-gray-500 truncate">{companyName ?? '—'}</span>
+          <span className="text-gray-500 truncate text-xs">{companyName ?? '—'}</span>
         )}
-        <span className="text-gray-600 truncate">{task.responsible ?? '—'}</span>
-        <StatusBadge status={task.status} />
-        <span className={isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}>
-          {task.due_date ? format(new Date(task.due_date), 'MMM d') : '—'}
-        </span>
-        <span className="text-indigo-500">
-          {task.followup_date ? format(new Date(task.followup_date), 'MMM d') : '—'}
-        </span>
-        <span className="text-gray-500 truncate">{task.waiting_on ?? '—'}</span>
+
+        {/* Responsible */}
+        <select
+          value={vals.responsible}
+          onChange={e => {
+            setVals(v => ({ ...v, responsible: e.target.value }))
+            save('responsible', e.target.value)
+          }}
+          className={selectClass}
+        >
+          <option value="">—</option>
+          {KNOWN_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+
+        {/* Status */}
+        <select
+          value={vals.status}
+          onChange={e => {
+            const v = e.target.value as Task['status']
+            setVals(s => ({ ...s, status: v }))
+            save('status', v)
+          }}
+          className={`${selectClass} font-medium ${statusColor}`}
+        >
+          <option value="on_track">On track</option>
+          <option value="at_risk">At risk</option>
+          <option value="completed">Completed</option>
+        </select>
+
+        {/* Due date */}
+        <input
+          type="date"
+          value={vals.due_date}
+          onChange={e => {
+            setVals(v => ({ ...v, due_date: e.target.value }))
+            save('due_date', e.target.value)
+          }}
+          className={`${dateClass} ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-600'}`}
+        />
+
+        {/* Reminder date */}
+        <input
+          type="date"
+          value={vals.followup_date}
+          onChange={e => {
+            setVals(v => ({ ...v, followup_date: e.target.value }))
+            save('followup_date', e.target.value)
+          }}
+          className={`${dateClass} text-indigo-500`}
+        />
+
+        {/* Waiting on */}
+        <select
+          value={vals.waiting_on}
+          onChange={e => {
+            setVals(v => ({ ...v, waiting_on: e.target.value }))
+            save('waiting_on', e.target.value)
+          }}
+          className={selectClass}
+        >
+          <option value="">—</option>
+          {KNOWN_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
       </div>
-    </button>
+    </div>
   )
 }

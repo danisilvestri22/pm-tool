@@ -80,8 +80,8 @@ export default function TaskList({ tasks, showCompany, companies = {} }: Props) 
               className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
               style={{
                 gridTemplateColumns: showCompany
-                  ? '2fr 1fr 1fr 90px 80px 80px 90px'
-                  : '2fr 1fr 90px 80px 80px 90px',
+                  ? '2fr 1fr 1fr 110px 120px 120px 120px'
+                  : '2fr 1fr 110px 120px 120px 120px',
               }}
             >
               {columns.map(col => (
