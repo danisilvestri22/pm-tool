@@ -6,6 +6,7 @@ import TaskPanelField from './TaskPanelField'
 import TaskForm from './TaskForm'
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
+import SubtaskList from './SubtaskList'
 import Toast from '@/components/ui/Toast'
 import { updateTask, softDeleteTask, restoreTask } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
@@ -123,30 +124,9 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
             </TaskPanelField>
           )}
 
-          {subtasks.length > 0 && (
-            <TaskPanelField label={`Subtasks (${subtasks.length})`}>
-              <div className="space-y-1 mt-1">
-                {subtasks.map(sub => (
-                  <div key={sub.id} className="flex items-center gap-2 text-sm">
-                    <span
-                      className={`w-2 h-2 rounded-full shrink-0 ${
-                        sub.status === 'completed' ? 'bg-gray-300' : 'bg-indigo-400'
-                      }`}
-                    />
-                    <span
-                      className={
-                        sub.status === 'completed'
-                          ? 'line-through text-gray-400'
-                          : 'text-gray-700'
-                      }
-                    >
-                      {sub.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </TaskPanelField>
-          )}
+          <TaskPanelField label={`Subtasks${subtasks.length > 0 ? ` (${subtasks.length})` : ''}`}>
+            <SubtaskList parentTask={task} subtasks={subtasks} />
+          </TaskPanelField>
         </dl>
 
         <div className="p-4 border-t">
