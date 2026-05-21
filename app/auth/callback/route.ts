@@ -12,5 +12,5 @@ export async function GET(request: NextRequest) {
     if (error) redirect('/login?error=auth')
   }
 
-  redirect('/')
+  redirect('/tasks')
 }
