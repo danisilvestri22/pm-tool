@@ -41,7 +41,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
 
   if (editing) {
     return (
-      <aside className="w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col">
+      <aside className="fixed sm:relative inset-0 sm:inset-auto sm:w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col z-30 sm:z-auto">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="font-semibold text-gray-900 text-sm">Edit task</h2>
           <button onClick={() => setEditing(false)} className="text-gray-400 hover:text-gray-600">
@@ -66,7 +66,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
 
   return (
     <>
-      <aside className="w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col">
+      <aside className="fixed sm:relative inset-0 sm:inset-auto sm:w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col z-30 sm:z-auto">
         <div className="flex items-start justify-between p-4 border-b gap-2">
           <h2 className="font-semibold text-gray-900 flex-1 min-w-0 break-words">{task.name}</h2>
           <div className="flex items-center gap-1 shrink-0">

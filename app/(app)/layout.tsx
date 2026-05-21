@@ -18,8 +18,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar companies={companies ?? []} />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto min-w-0">
         <PushPermission />
+        {/* pt-12 on mobile to clear the fixed hamburger button */}
+        <div className="md:hidden h-12" />
         {children}
       </main>
     </div>

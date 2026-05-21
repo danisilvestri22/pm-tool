@@ -77,7 +77,7 @@ export default function TaskList({ tasks, showCompany, companies = {} }: Props) 
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-auto">
             <div
-              className="grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
+              className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
               style={{
                 gridTemplateColumns: showCompany
                   ? '2fr 1fr 1fr 90px 80px 90px'
