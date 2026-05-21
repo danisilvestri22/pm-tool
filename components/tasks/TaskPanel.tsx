@@ -3,34 +3,61 @@ import { useState } from 'react'
 import { X, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import TaskPanelField from './TaskPanelField'
+import TaskForm from './TaskForm'
 import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
+import { updateTask, softDeleteTask } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
 
 interface Props {
   task: Task | null
   subtasks?: Task[]
   onClose: () => void
-  onEdit?: (task: Task) => void
 }
 
-export default function TaskPanel({ task, subtasks = [], onClose, onEdit }: Props) {
+export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
+  const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
   if (!task) return null
+
+  if (editing) {
+    return (
+      <aside className="w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="font-semibold text-gray-900 text-sm">Edit task</h2>
+          <button onClick={() => setEditing(false)} className="text-gray-400 hover:text-gray-600">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="p-4 flex-1 overflow-y-auto">
+          <TaskForm
+            companyId={task.company_id}
+            task={task}
+            onSubmit={async fd => {
+              const result = await updateTask(task.id, fd)
+              if (result?.success) setEditing(false)
+              return result
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="w-80 bg-white border-l h-full overflow-y-auto shrink-0 flex flex-col">
       <div className="flex items-start justify-between p-4 border-b gap-2">
         <h2 className="font-semibold text-gray-900 flex-1 min-w-0 break-words">{task.name}</h2>
         <div className="flex items-center gap-1 shrink-0">
-          {onEdit && (
-            <button
-              onClick={() => onEdit(task)}
-              className="text-gray-400 hover:text-gray-600 p-1 rounded"
-              aria-label="Edit task"
-            >
-              <Pencil size={14} />
-            </button>
-          )}
+          <button
+            onClick={() => setEditing(true)}
+            className="text-gray-400 hover:text-gray-600 p-1 rounded"
+            aria-label="Edit task"
+          >
+            <Pencil size={14} />
+          </button>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 p-1 rounded"
@@ -90,7 +117,9 @@ export default function TaskPanel({ task, subtasks = [], onClose, onEdit }: Prop
                   />
                   <span
                     className={
-                      sub.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-700'
+                      sub.status === 'completed'
+                        ? 'line-through text-gray-400'
+                        : 'text-gray-700'
                     }
                   >
                     {sub.name}
@@ -101,6 +130,20 @@ export default function TaskPanel({ task, subtasks = [], onClose, onEdit }: Prop
           </TaskPanelField>
         )}
       </dl>
+
+      <div className="p-4 border-t">
+        <button
+          onClick={async () => {
+            setDeleting(true)
+            await softDeleteTask(task.id)
+            onClose()
+          }}
+          disabled={deleting}
+          className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+        >
+          {deleting ? 'Deleting…' : 'Delete task'}
+        </button>
+      </div>
     </aside>
   )
 }

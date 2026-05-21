@@ -1,5 +1,6 @@
 'use client'
 import TaskList from '@/components/tasks/TaskList'
+import AddTaskButton from '@/components/tasks/AddTaskButton'
 import type { Task } from '@/types/database'
 
 interface Company {
@@ -15,10 +16,11 @@ interface Props {
 export default function CompanyView({ company, tasks }: Props) {
   return (
     <div className="p-6 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-gray-900">{company.name}</h1>
       </div>
-      <div className="flex-1 overflow-auto">
+      <AddTaskButton companyId={company.id} />
+      <div className="flex-1 overflow-hidden">
         <TaskList tasks={tasks} />
       </div>
     </div>
