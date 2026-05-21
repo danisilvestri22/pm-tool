@@ -15,6 +15,8 @@ interface Props {
 }
 
 export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, onSelect }: Props) {
+  const [editingName, setEditingName] = useState(false)
+  const [nameVal, setNameVal] = useState(task.name)
   const [vals, setVals] = useState({
     responsible: task.responsible ?? '',
     status: task.status,
@@ -24,6 +26,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
   })
 
   useEffect(() => {
+    setNameVal(task.name)
     setVals({
       responsible: task.responsible ?? '',
       status: task.status,
@@ -92,16 +95,43 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             : '2fr 1fr 110px 120px 120px 120px',
         }}
       >
-        {/* Task name — click opens detail panel */}
-        <button
-          onClick={() => onSelect(task)}
-          className="font-medium text-gray-900 truncate text-left hover:text-indigo-600 transition-colors py-1"
-        >
-          {task.name}
-          {subtaskCount > 0 && (
-            <span className="ml-1.5 text-xs text-gray-400 font-normal">({subtaskCount})</span>
+        {/* Task name — click to edit, double-click or icon to open panel */}
+        <div className="flex items-center gap-1 min-w-0">
+          {editingName ? (
+            <input
+              autoFocus
+              value={nameVal}
+              onChange={e => setNameVal(e.target.value)}
+              onBlur={async () => {
+                setEditingName(false)
+                if (nameVal.trim() && nameVal !== task.name) {
+                  const fd = new FormData()
+                  fd.set('name', nameVal.trim())
+                  await updateTask(task.id, fd)
+                } else {
+                  setNameVal(task.name)
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') e.currentTarget.blur()
+                if (e.key === 'Escape') { setNameVal(task.name); setEditingName(false) }
+              }}
+              className="font-medium text-gray-900 text-sm w-full border-b border-indigo-400 focus:outline-none bg-transparent py-0.5"
+            />
+          ) : (
+            <button
+              onClick={() => setEditingName(true)}
+              onDoubleClick={() => onSelect(task)}
+              className="font-medium text-gray-900 truncate text-left hover:text-indigo-600 transition-colors py-1 text-sm"
+              title="Click to edit · Double-click to open"
+            >
+              {nameVal}
+              {subtaskCount > 0 && (
+                <span className="ml-1.5 text-xs text-gray-400 font-normal">({subtaskCount})</span>
+              )}
+            </button>
           )}
-        </button>
+        </div>
 
         {showCompany && (
           <span className="text-gray-500 truncate text-xs">{companyName ?? '—'}</span>
