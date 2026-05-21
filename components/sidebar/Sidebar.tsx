@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, Plus, Upload, Settings, Trash2, Menu, X } from 'lucide-react'
+import { LayoutGrid, Plus, Upload, Settings, Trash2, Menu, X, Bell } from 'lucide-react'
 import type { Company } from '@/types/database'
 
 interface Props {
@@ -45,6 +45,10 @@ export default function Sidebar({ companies }: Props) {
 
   const bottom = (
     <>
+      <Link href="/reminders" className={linkClass(pathname === '/reminders')} onClick={() => setMobileOpen(false)}>
+        <Bell size={14} />
+        Reminders
+      </Link>
       <Link href="/company/new" className={linkClass(pathname === '/company/new')} onClick={() => setMobileOpen(false)}>
         <Plus size={14} />
         Add company

@@ -55,8 +55,8 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
         className="hidden sm:grid items-center gap-3 px-4 py-3 text-sm"
         style={{
           gridTemplateColumns: showCompany
-            ? '2fr 1fr 1fr 90px 80px 90px'
-            : '2fr 1fr 90px 80px 90px',
+            ? '2fr 1fr 1fr 90px 80px 80px 90px'
+            : '2fr 1fr 90px 80px 80px 90px',
         }}
       >
         <span className="font-medium text-gray-900 truncate">
@@ -74,6 +74,9 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
         <StatusBadge status={task.status} />
         <span className={isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}>
           {task.due_date ? format(new Date(task.due_date), 'MMM d') : '—'}
+        </span>
+        <span className="text-indigo-500">
+          {task.followup_date ? format(new Date(task.followup_date), 'MMM d') : '—'}
         </span>
         <span className="text-gray-500 truncate">{task.waiting_on ?? '—'}</span>
       </div>

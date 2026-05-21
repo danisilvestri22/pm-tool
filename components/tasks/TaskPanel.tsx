@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import TaskPanelField from './TaskPanelField'
@@ -8,7 +8,7 @@ import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import SubtaskList from './SubtaskList'
 import Toast from '@/components/ui/Toast'
-import { updateTask, softDeleteTask, restoreTask } from '@/app/(app)/actions/tasks'
+import { updateTask, softDeleteTask, restoreTask, getKnownNames } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
 
 interface Props {
@@ -21,6 +21,18 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
   const [editing, setEditing] = useState(false)
   const [deletedTaskId, setDeletedTaskId] = useState<string | null>(null)
   const [deletedTaskName, setDeletedTaskName] = useState('')
+  const [knownNames, setKnownNames] = useState<string[]>([])
+
+  useEffect(() => {
+    getKnownNames().then(setKnownNames)
+  }, [])
+
+  async function updateField(field: string, value: string) {
+    if (!task) return
+    const fd = new FormData()
+    fd.set(field, value)
+    await updateTask(task.id, fd)
+  }
 
   if (!task) {
     return (
@@ -52,6 +64,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
           <TaskForm
             companyId={task.company_id}
             task={task}
+            knownNames={knownNames}
             onSubmit={async fd => {
               const result = await updateTask(task.id, fd)
               if (result?.success) setEditing(false)
@@ -63,6 +76,8 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
       </aside>
     )
   }
+
+  const inputClass = 'w-full text-sm text-gray-700 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-400 focus:outline-none py-0.5 transition-colors'
 
   return (
     <>
@@ -87,6 +102,10 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
           </div>
         </div>
 
+        <datalist id="panel-known-names">
+          {knownNames.map(n => <option key={n} value={n} />)}
+        </datalist>
+
         <dl className="p-4 space-y-4 flex-1">
           <TaskPanelField label="Status">
             <StatusBadge status={task.status} />
@@ -97,25 +116,44 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
           </TaskPanelField>
 
           <TaskPanelField label="Responsible">
-            {task.responsible ?? '—'}
+            <input
+              list="panel-known-names"
+              defaultValue={task.responsible ?? ''}
+              onBlur={e => updateField('responsible', e.target.value)}
+              placeholder="—"
+              className={inputClass}
+            />
           </TaskPanelField>
 
           <TaskPanelField label="Due date">
-            {task.due_date ? format(new Date(task.due_date), 'MMM d, yyyy') : '—'}
+            <input
+              type="date"
+              defaultValue={task.due_date ?? ''}
+              onChange={e => updateField('due_date', e.target.value)}
+              className={inputClass}
+            />
           </TaskPanelField>
 
-          <TaskPanelField label="Follow-up date">
-            {task.followup_date ? (
-              <span className="text-indigo-600">
-                {format(new Date(task.followup_date), 'MMM d, yyyy')} — remind me
-              </span>
-            ) : (
-              '—'
+          <TaskPanelField label="Reminder date">
+            <input
+              type="date"
+              defaultValue={task.followup_date ?? ''}
+              onChange={e => updateField('followup_date', e.target.value)}
+              className={inputClass}
+            />
+            {task.followup_date && (
+              <p className="text-xs text-indigo-500 mt-0.5">Push notification will fire on this date</p>
             )}
           </TaskPanelField>
 
           <TaskPanelField label="Waiting on">
-            {task.waiting_on ?? '—'}
+            <input
+              list="panel-known-names"
+              defaultValue={task.waiting_on ?? ''}
+              onBlur={e => updateField('waiting_on', e.target.value)}
+              placeholder="—"
+              className={inputClass}
+            />
           </TaskPanelField>
 
           {task.notes && (

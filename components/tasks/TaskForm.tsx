@@ -6,11 +6,12 @@ interface Props {
   companyId: string
   task?: Task
   parentTaskId?: string
+  knownNames?: string[]
   onSubmit: (fd: FormData) => Promise<{ error?: string; success?: boolean } | undefined>
   onCancel: () => void
 }
 
-export default function TaskForm({ companyId, task, parentTaskId, onSubmit, onCancel }: Props) {
+export default function TaskForm({ companyId, task, parentTaskId, knownNames = [], onSubmit, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -33,6 +34,10 @@ export default function TaskForm({ companyId, task, parentTaskId, onSubmit, onCa
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <datalist id="form-known-names">
+        {knownNames.map(n => <option key={n} value={n} />)}
+      </datalist>
+
       <div>
         <label className="block text-xs text-gray-500 mb-1">Task name *</label>
         <input name="name" required defaultValue={task?.name} className={inputClass} autoFocus />
@@ -40,7 +45,7 @@ export default function TaskForm({ companyId, task, parentTaskId, onSubmit, onCa
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Responsible</label>
-        <input name="responsible" defaultValue={task?.responsible ?? ''} className={inputClass} />
+        <input name="responsible" list="form-known-names" defaultValue={task?.responsible ?? ''} className={inputClass} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -75,7 +80,7 @@ export default function TaskForm({ companyId, task, parentTaskId, onSubmit, onCa
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Waiting on</label>
-        <input name="waiting_on" defaultValue={task?.waiting_on ?? ''} className={inputClass} />
+        <input name="waiting_on" list="form-known-names" defaultValue={task?.waiting_on ?? ''} className={inputClass} />
       </div>
 
       <div>
