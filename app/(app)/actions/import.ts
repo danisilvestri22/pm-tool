@@ -22,6 +22,7 @@ export async function importTasks(
     priority: t.priority,
     due_date: t.due_date,
     notes: t.notes,
+    waiting_on: t.waiting_on,
     asana_id: t.asana_id,
     parent_task_id: null as string | null,
   }))
@@ -47,6 +48,7 @@ export async function importTasks(
       priority: t.priority,
       due_date: t.due_date,
       notes: t.notes,
+      waiting_on: t.waiting_on,
       asana_id: t.asana_id,
       parent_task_id: t.parentTaskName ? (nameToId[t.parentTaskName] ?? null) : null,
     }))
