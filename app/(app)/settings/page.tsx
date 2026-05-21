@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import ShareLinksSection from './ShareLinksSection'
+import InviteSection from './InviteSection'
 import type { ShareLink } from '@/types/database'
 
 export const metadata = { title: 'Settings & Links' }
@@ -21,8 +22,10 @@ export default async function SettingsPage() {
   }))
 
   return (
-    <div className="p-6 max-w-lg">
-      <h1 className="text-xl font-semibold text-gray-900 mb-6">Settings & Links</h1>
+    <div className="p-6 max-w-lg space-y-10">
+      <h1 className="text-xl font-semibold text-gray-900">Settings & Links</h1>
+      <InviteSection />
+      <hr />
       <ShareLinksSection companies={companies ?? []} links={enrichedLinks} />
     </div>
   )
