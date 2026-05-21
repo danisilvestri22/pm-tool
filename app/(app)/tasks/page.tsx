@@ -1,10 +1,22 @@
+import { createClient } from '@/lib/supabase/server'
+import AllTasksView from './AllTasksView'
+
 export const metadata = { title: 'All My Tasks' }
 
-export default function TasksPage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold text-gray-900 mb-4">All My Tasks</h1>
-      <p className="text-gray-500 text-sm">Tasks across all companies will appear here.</p>
-    </div>
-  )
+export default async function TasksPage() {
+  const supabase = await createClient()
+
+  const [{ data: tasks }, { data: companies }] = await Promise.all([
+    supabase
+      .from('tasks')
+      .select('*')
+      .is('deleted_at', null)
+      .neq('status', 'completed')
+      .order('due_date', { ascending: true, nullsFirst: false }),
+    supabase.from('companies').select('id, name'),
+  ])
+
+  const companyMap = Object.fromEntries((companies ?? []).map(c => [c.id, c.name]))
+
+  return <AllTasksView tasks={tasks ?? []} companies={companyMap} />
 }
