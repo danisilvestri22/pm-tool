@@ -29,7 +29,7 @@ export default function FilterBar({ filters, onChange }: Props) {
       onChange({ ...filters, [key]: e.target.value })
 
   const inputClass =
-    'border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white'
+    'border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white'
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">

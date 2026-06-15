@@ -41,8 +41,8 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
             onClick={() => toggleComplete(sub)}
             className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
               sub.status === 'completed'
-                ? 'bg-indigo-500 border-indigo-500 text-white'
-                : 'border-gray-300 hover:border-indigo-400'
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'border-gray-300 hover:border-emerald-400'
             }`}
             aria-label={sub.status === 'completed' ? 'Mark incomplete' : 'Mark complete'}
           >
@@ -91,7 +91,7 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
               }
             }}
             placeholder="Subtask name"
-            className="flex-1 text-sm border-b border-indigo-400 outline-none py-0.5 bg-transparent"
+            className="flex-1 text-sm border-b border-emerald-400 outline-none py-0.5 bg-transparent"
             autoFocus
             disabled={submitting}
           />
@@ -99,7 +99,7 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-600 transition-colors"
+          className="flex items-center gap-1 text-xs text-gray-400 hover:text-emerald-600 transition-colors"
         >
           <Plus size={12} />
           Add subtask

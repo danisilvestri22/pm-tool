@@ -60,7 +60,7 @@ export default function TrashView({ tasks, companies }: Props) {
                   <div className="flex items-center gap-3 shrink-0">
                     <button
                       onClick={() => restoreTask(task.id)}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
+                      className="text-xs text-emerald-600 hover:text-emerald-800"
                     >
                       Restore
                     </button>

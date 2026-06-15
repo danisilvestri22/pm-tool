@@ -27,7 +27,7 @@ export default function NewCompanyPage() {
             name="name"
             autoFocus
             required
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="e.g. Oracle"
           />
         </div>
@@ -35,7 +35,7 @@ export default function NewCompanyPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
         >
           {loading ? 'Creating…' : 'Create'}
         </button>

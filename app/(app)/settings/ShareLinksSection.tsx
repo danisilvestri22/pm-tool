@@ -25,7 +25,7 @@ function CopyButton({ url }: { url: string }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-1 text-xs text-gray-500 hover:text-indigo-600 transition-colors"
+      className="flex items-center gap-1 text-xs text-gray-500 hover:text-emerald-600 transition-colors"
     >
       {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
       {copied ? 'Copied!' : 'Copy link'}
@@ -52,7 +52,7 @@ export default function ShareLinksSection({ companies, links }: Props) {
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
 
   const inputClass =
-    'border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+    'border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
 
   return (
     <section>
@@ -82,7 +82,7 @@ export default function ShareLinksSection({ companies, links }: Props) {
         <button
           onClick={handleCreate}
           disabled={creating || !selectedCompanyId}
-          className="flex items-center gap-1.5 bg-indigo-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
         >
           <Plus size={14} />
           {creating ? 'Creating…' : 'Create link'}

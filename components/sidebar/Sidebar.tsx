@@ -15,7 +15,9 @@ export default function Sidebar({ companies }: Props) {
 
   const linkClass = (active: boolean) =>
     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-      active ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
+      active
+        ? 'bg-slate-700 text-emerald-400 font-medium'
+        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
     }`
 
   const nav = (
@@ -24,7 +26,7 @@ export default function Sidebar({ companies }: Props) {
         <LayoutGrid size={15} />
         All My Tasks
       </Link>
-      <div className="mt-3 mb-1 px-3 text-xs text-gray-400 uppercase tracking-wide">
+      <div className="mt-3 mb-1 px-3 text-xs text-slate-500 uppercase tracking-wide">
         Companies
       </div>
       {companies.map(c => (
@@ -38,7 +40,7 @@ export default function Sidebar({ companies }: Props) {
         </Link>
       ))}
       {companies.length === 0 && (
-        <p className="px-3 py-2 text-xs text-gray-400">No companies yet.</p>
+        <p className="px-3 py-2 text-xs text-slate-500">No companies yet.</p>
       )}
     </>
   )
@@ -65,8 +67,8 @@ export default function Sidebar({ companies }: Props) {
         href="/trash"
         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
           pathname === '/trash'
-            ? 'bg-indigo-50 text-indigo-700 font-medium'
-            : 'text-gray-400 hover:bg-gray-100'
+            ? 'bg-slate-700 text-emerald-400 font-medium'
+            : 'text-slate-500 hover:bg-slate-700 hover:text-slate-300'
         }`}
         onClick={() => setMobileOpen(false)}
       >
@@ -95,18 +97,18 @@ export default function Sidebar({ companies }: Props) {
         />
       )}
 
-      {/* Sidebar — overlay on mobile, static on desktop */}
+      {/* Sidebar */}
       <aside
         className={`
-          fixed md:relative inset-y-0 left-0 z-50 w-56 bg-white border-r flex flex-col h-full shrink-0
+          fixed md:relative inset-y-0 left-0 z-50 w-56 bg-slate-800 border-r border-slate-700 flex flex-col h-full shrink-0
           transition-transform duration-200 md:translate-x-0
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="p-4 border-b flex items-center justify-between">
-          <span className="font-semibold text-gray-900">PM Tool</span>
+        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+          <span className="font-semibold text-white">PM Tool</span>
           <button
-            className="md:hidden text-gray-400 hover:text-gray-600"
+            className="md:hidden text-slate-400 hover:text-white"
             onClick={() => setMobileOpen(false)}
             aria-label="Close menu"
           >
@@ -114,7 +116,7 @@ export default function Sidebar({ companies }: Props) {
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto p-2">{nav}</nav>
-        <div className="p-2 border-t space-y-0.5">{bottom}</div>
+        <div className="p-2 border-t border-slate-700 space-y-0.5">{bottom}</div>
       </aside>
     </>
   )

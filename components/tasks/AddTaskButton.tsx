@@ -27,7 +27,7 @@ export default function AddTaskButton({ companyId }: { companyId: string }) {
   return (
     <button
       onClick={() => setOpen(true)}
-      className="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 mb-4"
+      className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 mb-4"
     >
       <Plus size={14} />
       Add task

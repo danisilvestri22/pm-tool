@@ -44,8 +44,8 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
   const isOverdue = vals.due_date && vals.status !== 'completed' && new Date(vals.due_date) < new Date()
 
-  const selectClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-indigo-400 cursor-pointer max-w-full'
-  const dateClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-indigo-400 cursor-pointer w-[120px]'
+  const selectClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer max-w-full'
+  const dateClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer w-[120px]'
 
   const statusColor =
     vals.status === 'completed' ? 'text-green-700' :
@@ -116,13 +116,13 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
                 if (e.key === 'Enter') e.currentTarget.blur()
                 if (e.key === 'Escape') { setNameVal(task.name); setEditingName(false) }
               }}
-              className="font-medium text-gray-900 text-sm w-full border-b border-indigo-400 focus:outline-none bg-transparent py-0.5"
+              className="font-medium text-gray-900 text-sm w-full border-b border-emerald-400 focus:outline-none bg-transparent py-0.5"
             />
           ) : (
             <button
               onClick={() => setEditingName(true)}
               onDoubleClick={() => onSelect(task)}
-              className="font-medium text-gray-900 truncate text-left hover:text-indigo-600 transition-colors py-1 text-sm"
+              className="font-medium text-gray-900 truncate text-left hover:text-emerald-600 transition-colors py-1 text-sm"
               title="Click to edit · Double-click to open"
             >
               {nameVal}
@@ -184,7 +184,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             setVals(v => ({ ...v, followup_date: e.target.value }))
             save('followup_date', e.target.value)
           }}
-          className={`${dateClass} text-indigo-500`}
+          className={`${dateClass} text-emerald-500`}
         />
 
         {/* Waiting on */}

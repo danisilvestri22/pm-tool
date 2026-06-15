@@ -34,7 +34,7 @@ function SnoozeMenu({ id }: { id: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-600 transition-colors"
+        className="flex items-center gap-1 text-xs text-gray-400 hover:text-emerald-600 transition-colors"
       >
         <Clock size={12} />
         Snooze
@@ -79,7 +79,7 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
           </p>
         )}
         {r.snoozed_until && !r.completed_at && (
-          <p className="text-xs text-indigo-500 mt-0.5">
+          <p className="text-xs text-emerald-500 mt-0.5">
             Snoozed until {format(new Date(r.snoozed_until), 'MMM d, h:mm a')}
           </p>
         )}
@@ -121,7 +121,7 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
   const [loading, setLoading] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
 
-  const inputClass = 'w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+  const inputClass = 'w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -139,12 +139,12 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
     <div className="p-6 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Bell size={18} className="text-indigo-500" />
+          <Bell size={18} className="text-emerald-500" />
           <h1 className="text-xl font-semibold text-gray-900">Reminders</h1>
         </div>
         <button
           onClick={() => setAdding(a => !a)}
-          className="flex items-center gap-1.5 bg-indigo-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 transition-colors"
         >
           <Plus size={14} />
           Add reminder
@@ -169,7 +169,7 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="bg-emerald-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
             >
               {loading ? 'Saving…' : 'Save'}
             </button>

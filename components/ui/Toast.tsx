@@ -20,7 +20,7 @@ export default function Toast({ message, onUndo, onDismiss, durationMs = 8000 }:
       {onUndo && (
         <button
           onClick={onUndo}
-          className="font-semibold text-indigo-300 hover:text-indigo-100"
+          className="font-semibold text-emerald-300 hover:text-emerald-100"
         >
           Undo
         </button>

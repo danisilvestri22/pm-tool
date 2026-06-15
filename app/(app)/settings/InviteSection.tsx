@@ -46,12 +46,12 @@ export default function InviteSection() {
           onChange={e => setEmail(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleInvite()}
           placeholder="name@example.com"
-          className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         <button
           onClick={handleInvite}
           disabled={loading || !email.trim()}
-          className="flex items-center gap-1.5 bg-indigo-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+          className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors whitespace-nowrap"
         >
           {sent ? (
             <>

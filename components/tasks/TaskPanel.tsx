@@ -77,7 +77,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
     )
   }
 
-  const inputClass = 'w-full text-sm text-gray-700 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-400 focus:outline-none py-0.5 transition-colors'
+  const inputClass = 'w-full text-sm text-gray-700 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-emerald-400 focus:outline-none py-0.5 transition-colors'
 
   return (
     <>
@@ -142,7 +142,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
               className={inputClass}
             />
             {task.followup_date && (
-              <p className="text-xs text-indigo-500 mt-0.5">Push notification will fire on this date</p>
+              <p className="text-xs text-emerald-500 mt-0.5">Push notification will fire on this date</p>
             )}
           </TaskPanelField>
 

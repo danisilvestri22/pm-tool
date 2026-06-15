@@ -38,13 +38,13 @@ export default function PushPermission() {
   if (status === 'loading' || status === 'granted' || status === 'unsupported') return null
 
   return (
-    <div className="mx-6 mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex items-center justify-between">
-      <p className="text-sm text-indigo-800">
+    <div className="mx-6 mt-4 bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-center justify-between">
+      <p className="text-sm text-emerald-800">
         Enable notifications to get follow-up reminders on your phone.
       </p>
       <button
         onClick={enable}
-        className="text-sm font-medium text-indigo-700 hover:text-indigo-900 ml-4 shrink-0"
+        className="text-sm font-medium text-emerald-700 hover:text-emerald-900 ml-4 shrink-0"
       >
         Enable
       </button>

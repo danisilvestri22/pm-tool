@@ -30,7 +30,7 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
   }
 
   const inputClass =
-    'w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+    'w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -99,7 +99,7 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="bg-emerald-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
         >
           {loading ? 'Saving…' : task ? 'Save changes' : 'Add task'}
         </button>

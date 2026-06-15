@@ -14,7 +14,7 @@ export default function ViewToggle({ view, onChange }: Props) {
           key={v}
           onClick={() => onChange(v)}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
-            view === v ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
+            view === v ? 'bg-emerald-50 text-emerald-700' : 'text-gray-500 hover:bg-gray-50'
           }`}
         >
           {v === 'list' ? <List size={14} /> : <LayoutGrid size={14} />}

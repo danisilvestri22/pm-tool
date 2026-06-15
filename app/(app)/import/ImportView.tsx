@@ -54,7 +54,7 @@ export default function ImportView({ companies }: Props) {
   }
 
   const inputClass =
-    'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+    'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
 
   return (
     <div className="p-6 max-w-lg">
@@ -90,7 +90,7 @@ export default function ImportView({ companies }: Props) {
 
         <div>
           <label className="block text-xs text-gray-500 mb-1">Asana CSV file</label>
-          <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl p-4 cursor-pointer hover:border-indigo-300 transition-colors">
+          <label className="flex items-center gap-3 border-2 border-dashed border-gray-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
             <Upload size={18} className="text-gray-400 shrink-0" />
             <span className="text-sm text-gray-500 truncate">
               {fileName || 'Choose a CSV file…'}
@@ -100,8 +100,8 @@ export default function ImportView({ companies }: Props) {
         </div>
 
         {parsed && (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
-            <p className="text-sm text-indigo-800">
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+            <p className="text-sm text-emerald-800">
               Found <strong>{parsed.length}</strong> task
               {parsed.length !== 1 ? 's' : ''} (
               {parsed.filter(t => t.parentTaskName).length} subtasks)
@@ -114,7 +114,7 @@ export default function ImportView({ companies }: Props) {
         <button
           onClick={handleImport}
           disabled={!parsed || importing || !companyId}
-          className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {importing ? 'Importing…' : 'Import tasks'}
         </button>
