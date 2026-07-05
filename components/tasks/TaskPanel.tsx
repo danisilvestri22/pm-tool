@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Pencil } from 'lucide-react'
 import { format } from 'date-fns'
 import TaskPanelField from './TaskPanelField'
@@ -8,24 +8,20 @@ import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import SubtaskList from './SubtaskList'
 import Toast from '@/components/ui/Toast'
-import { updateTask, softDeleteTask, restoreTask, getKnownNames } from '@/app/(app)/actions/tasks'
+import { updateTask, softDeleteTask, restoreTask } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
 
 interface Props {
   task: Task | null
   subtasks?: Task[]
+  people?: string[]
   onClose: () => void
 }
 
-export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
+export default function TaskPanel({ task, subtasks = [], people = [], onClose }: Props) {
   const [editing, setEditing] = useState(false)
   const [deletedTaskId, setDeletedTaskId] = useState<string | null>(null)
   const [deletedTaskName, setDeletedTaskName] = useState('')
-  const [knownNames, setKnownNames] = useState<string[]>([])
-
-  useEffect(() => {
-    getKnownNames().then(setKnownNames)
-  }, [])
 
   async function updateField(field: string, value: string) {
     if (!task) return
@@ -64,7 +60,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
           <TaskForm
             companyId={task.company_id}
             task={task}
-            knownNames={knownNames}
+            knownNames={people}
             onSubmit={async fd => {
               const result = await updateTask(task.id, fd)
               if (result?.success) setEditing(false)
@@ -103,7 +99,7 @@ export default function TaskPanel({ task, subtasks = [], onClose }: Props) {
         </div>
 
         <datalist id="panel-known-names">
-          {knownNames.map(n => <option key={n} value={n} />)}
+          {people.map(n => <option key={n} value={n} />)}
         </datalist>
 
         <dl className="p-4 space-y-4 flex-1">
