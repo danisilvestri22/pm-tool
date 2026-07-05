@@ -4,17 +4,16 @@ import { format } from 'date-fns'
 import { updateTask } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
 
-const KNOWN_NAMES = ['Dani', 'Mike', 'Rick Sr', 'Rick Jr', 'Renato', 'Vitor']
-
 interface Props {
   task: Task
   showCompany?: boolean
   companyName?: string
   subtaskCount?: number
+  people?: string[]
   onSelect: (task: Task) => void
 }
 
-export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, onSelect }: Props) {
+export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], onSelect }: Props) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal, setNameVal] = useState(task.name)
   const [vals, setVals] = useState({
@@ -147,7 +146,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           className={selectClass}
         >
           <option value="">—</option>
-          {KNOWN_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
+          {people.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
 
         {/* Status */}
@@ -197,7 +196,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           className={selectClass}
         >
           <option value="">—</option>
-          {KNOWN_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
+          {people.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
       </div>
     </div>
