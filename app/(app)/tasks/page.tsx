@@ -6,7 +6,7 @@ export const metadata = { title: 'All Tasks' }
 export default async function TasksPage() {
   const supabase = await createClient()
 
-  const [{ data: tasks }, { data: companies }] = await Promise.all([
+  const [{ data: tasks }, { data: companies }, { data: people }] = await Promise.all([
     supabase
       .from('tasks')
       .select('*')
@@ -14,9 +14,16 @@ export default async function TasksPage() {
       .neq('status', 'completed')
       .order('due_date', { ascending: true, nullsFirst: false }),
     supabase.from('companies').select('id, name'),
+    supabase.from('people').select('name').order('name'),
   ])
 
   const companyMap = Object.fromEntries((companies ?? []).map(c => [c.id, c.name]))
 
-  return <AllTasksView tasks={tasks ?? []} companies={companyMap} />
+  return (
+    <AllTasksView
+      tasks={tasks ?? []}
+      companies={companyMap}
+      people={(people ?? []).map(p => p.name)}
+    />
+  )
 }
