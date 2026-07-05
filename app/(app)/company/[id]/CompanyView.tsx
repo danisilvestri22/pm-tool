@@ -15,9 +15,10 @@ interface Company {
 interface Props {
   company: Company
   tasks: Task[]
+  people: string[]
 }
 
-export default function CompanyView({ company, tasks }: Props) {
+export default function CompanyView({ company, tasks, people }: Props) {
   const [view, setView] = useState<'list' | 'board'>('list')
 
   return (
@@ -36,10 +37,10 @@ export default function CompanyView({ company, tasks }: Props) {
           <ViewToggle view={view} onChange={setView} />
         </div>
       </div>
-      <AddTaskButton companyId={company.id} />
+      <AddTaskButton companyId={company.id} people={people} />
       <div className="flex-1 overflow-hidden">
         {view === 'list' ? (
-          <TaskList tasks={tasks} />
+          <TaskList tasks={tasks} people={people} />
         ) : (
           <TaskBoard tasks={tasks} />
         )}
