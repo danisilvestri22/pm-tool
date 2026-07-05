@@ -57,6 +57,19 @@ This gets removed. Instead, `TaskRow` accepts a `people: string[]` prop.
 - `TaskList` passes to `TaskRow`
 - Company page server component (`app/(app)/company/[id]/page.tsx`) adds people to its data fetch
 
+## Task Form — Responsible Dropdown
+
+The Responsible field in `TaskForm.tsx` currently uses a free-text `<input>` with a `<datalist>` for suggestions. It becomes a proper `<select>` dropdown with the people list as options.
+
+**"Add new person" option:**
+- A special "＋ Add new person…" option appears at the bottom of the dropdown
+- Selecting it replaces the select with a small inline text input
+- User types the name and presses Enter (or clicks Add)
+- On confirm: calls `addPerson()` server action, new person is saved to the `people` table, and their name is set as the selected value in the form
+- Cancel link returns to the dropdown without saving
+- The same people list prop already passed to `TaskForm` via `knownNames` is used — no extra fetch needed
+- Waiting On field keeps its current `<datalist>` behavior (free text with suggestions), only Responsible becomes a strict select
+
 ## Out of Scope
 - Per-company people lists — one shared list across all companies
 - Renaming a person cascades to existing tasks — not in scope; names are stored as text, not foreign keys
