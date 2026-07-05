@@ -4,7 +4,12 @@ import { Plus } from 'lucide-react'
 import TaskForm from './TaskForm'
 import { createTask } from '@/app/(app)/actions/tasks'
 
-export default function AddTaskButton({ companyId }: { companyId: string }) {
+interface Props {
+  companyId: string
+  people?: string[]
+}
+
+export default function AddTaskButton({ companyId, people = [] }: Props) {
   const [open, setOpen] = useState(false)
 
   if (open) {
@@ -13,6 +18,7 @@ export default function AddTaskButton({ companyId }: { companyId: string }) {
         <h3 className="font-medium text-sm mb-3">New task</h3>
         <TaskForm
           companyId={companyId}
+          knownNames={people}
           onSubmit={async fd => {
             const result = await createTask(fd)
             if (result?.success) setOpen(false)
