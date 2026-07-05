@@ -12,9 +12,10 @@ interface Props {
   tasks: Task[]
   showCompany?: boolean
   companies?: Record<string, string>
+  people?: string[]
 }
 
-export default function TaskList({ tasks, showCompany, companies = {} }: Props) {
+export default function TaskList({ tasks, showCompany, companies = {}, people = [] }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
@@ -96,6 +97,7 @@ export default function TaskList({ tasks, showCompany, companies = {} }: Props) 
                   showCompany={showCompany}
                   companyName={companies[task.company_id]}
                   subtaskCount={subtaskCounts[task.id] ?? 0}
+                  people={people}
                   onSelect={setSelectedTask}
                 />
               ))}
@@ -105,6 +107,7 @@ export default function TaskList({ tasks, showCompany, companies = {} }: Props) 
           <TaskPanel
             task={selectedTask}
             subtasks={selectedTask ? subtasksFor(selectedTask.id) : []}
+            people={people}
             onClose={() => setSelectedTask(null)}
           />
         </div>
