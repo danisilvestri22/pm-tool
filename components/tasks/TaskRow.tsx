@@ -122,7 +122,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             <button
               onClick={() => setEditingName(true)}
               onDoubleClick={() => onSelect(task)}
-              className="font-medium text-gray-900 truncate text-left hover:text-emerald-600 transition-colors py-1 text-sm"
+              className="font-medium text-gray-900 text-left hover:text-emerald-600 transition-colors py-1 text-sm"
               title="Click to edit · Double-click to open"
             >
               {nameVal}

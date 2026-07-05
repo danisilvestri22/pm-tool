@@ -10,7 +10,7 @@ interface Props {
 export default function AllTasksView({ tasks, companies }: Props) {
   return (
     <div className="p-6 flex flex-col h-full">
-      <h1 className="text-xl font-semibold text-gray-900 mb-4">All My Tasks</h1>
+      <h1 className="text-xl font-semibold text-gray-900 mb-4">All Tasks</h1>
       {tasks.length === 0 ? (
         <p className="text-gray-400 text-sm">No open tasks across any company.</p>
       ) : (

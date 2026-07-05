@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import AllTasksView from './AllTasksView'
 
-export const metadata = { title: 'All My Tasks' }
+export const metadata = { title: 'All Tasks' }
 
 export default async function TasksPage() {
   const supabase = await createClient()

@@ -24,7 +24,7 @@ export default function Sidebar({ companies }: Props) {
     <>
       <Link href="/tasks" className={linkClass(pathname === '/tasks')} onClick={() => setMobileOpen(false)}>
         <LayoutGrid size={15} />
-        All My Tasks
+        All Tasks
       </Link>
       <div className="mt-3 mb-1 px-3 text-xs text-slate-500 uppercase tracking-wide">
         Companies
