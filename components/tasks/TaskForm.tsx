@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import type { Task } from '@/types/database'
+import { addPerson } from '@/app/(app)/actions/people'
 
 interface Props {
   companyId: string
@@ -14,6 +15,11 @@ interface Props {
 export default function TaskForm({ companyId, task, parentTaskId, knownNames = [], onSubmit, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [people, setPeople] = useState<string[]>(knownNames)
+  const [responsible, setResponsible] = useState(task?.responsible ?? '')
+  const [addingPerson, setAddingPerson] = useState(false)
+  const [newPersonName, setNewPersonName] = useState('')
+  const [addPersonError, setAddPersonError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -21,11 +27,37 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
     setError(null)
     const fd = new FormData(e.currentTarget)
     fd.set('company_id', companyId)
+    fd.set('responsible', responsible)
     if (parentTaskId) fd.set('parent_task_id', parentTaskId)
     const result = await onSubmit(fd)
     if (result?.error) {
       setError(result.error)
       setLoading(false)
+    }
+  }
+
+  async function handleAddPerson() {
+    if (!newPersonName.trim()) return
+    setAddPersonError(null)
+    const result = await addPerson(newPersonName)
+    if (result.error) {
+      setAddPersonError(result.error)
+      return
+    }
+    const name = newPersonName.trim()
+    setPeople(prev => [...prev, name].sort((a, b) => a.localeCompare(b)))
+    setResponsible(name)
+    setNewPersonName('')
+    setAddingPerson(false)
+  }
+
+  function handleResponsibleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    if (e.target.value === '__add_new__') {
+      setAddingPerson(true)
+      setNewPersonName('')
+      setAddPersonError(null)
+    } else {
+      setResponsible(e.target.value)
     }
   }
 
@@ -35,7 +67,7 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <datalist id="form-known-names">
-        {knownNames.map(n => <option key={n} value={n} />)}
+        {people.map(n => <option key={n} value={n} />)}
       </datalist>
 
       <div>
@@ -45,7 +77,48 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Responsible</label>
-        <input name="responsible" list="form-known-names" defaultValue={task?.responsible ?? ''} className={inputClass} />
+        {addingPerson ? (
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                value={newPersonName}
+                onChange={e => setNewPersonName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleAddPerson() }
+                  if (e.key === 'Escape') setAddingPerson(false)
+                }}
+                placeholder="Enter name…"
+                className={`${inputClass} flex-1`}
+              />
+              <button
+                type="button"
+                onClick={handleAddPerson}
+                className="bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 whitespace-nowrap"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddingPerson(false)}
+                className="text-sm text-gray-500 hover:text-gray-700 px-2 whitespace-nowrap"
+              >
+                Cancel
+              </button>
+            </div>
+            {addPersonError && <p className="text-xs text-red-600">{addPersonError}</p>}
+          </div>
+        ) : (
+          <select
+            value={responsible}
+            onChange={handleResponsibleChange}
+            className={inputClass}
+          >
+            <option value="">—</option>
+            {people.map(n => <option key={n} value={n}>{n}</option>)}
+            <option value="__add_new__">＋ Add new person…</option>
+          </select>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
