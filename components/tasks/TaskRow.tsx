@@ -71,6 +71,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
   const [vals, setVals] = useState({
     responsible: task.responsible ?? '',
     status: task.status,
+    priority: task.priority,
     due_date: task.due_date ?? '',
     followup_date: task.followup_date ?? '',
     waiting_on: task.waiting_on ?? '',
@@ -84,6 +85,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
     setVals({
       responsible: task.responsible ?? '',
       status: task.status,
+      priority: task.priority,
       due_date: task.due_date ?? '',
       followup_date: task.followup_date ?? '',
       waiting_on: task.waiting_on ?? '',
@@ -153,8 +155,8 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm"
           style={{
             gridTemplateColumns: showCompany
-              ? '2fr 1fr 1fr 110px 120px 120px 120px 200px'
-              : '2fr 1fr 110px 120px 120px 120px 200px',
+              ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px'
+              : '2fr 1fr 60px 110px 120px 120px 120px 200px',
           }}
         >
           {/* Task name */}
@@ -221,6 +223,27 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             <option value="">—</option>
             {people.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
+
+          {/* Priority */}
+          <button
+            onClick={() => {
+              const next = vals.priority === 'high' ? 'medium' : vals.priority === 'medium' ? 'low' : 'high'
+              const old = vals.priority
+              setVals(v => ({ ...v, priority: next }))
+              save('priority', next)
+              showUndo('Priority updated', () => {
+                setVals(v => ({ ...v, priority: old }))
+                save('priority', old)
+              })
+            }}
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded transition-colors ${
+              vals.priority === 'high' ? 'bg-red-100 text-red-700 hover:bg-red-200' :
+              vals.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' :
+              'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            {vals.priority === 'high' ? 'P1' : vals.priority === 'medium' ? 'P2' : 'P3'}
+          </button>
 
           {/* Status */}
           <select

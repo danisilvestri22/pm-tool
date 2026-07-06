@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { format, addHours, addDays } from 'date-fns'
-import { Bell, Check, Clock, Trash2, Plus, ChevronDown } from 'lucide-react'
-import { createReminder, snoozeReminder, completeReminder, deleteReminder } from '@/app/(app)/actions/reminders'
+import { Bell, Check, Clock, Trash2, Plus, ChevronDown, Pencil } from 'lucide-react'
+import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder } from '@/app/(app)/actions/reminders'
 
 interface Reminder {
   id: string
@@ -61,7 +61,62 @@ function SnoozeMenu({ id }: { id: string }) {
 }
 
 function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
   const isOverdue = r.due_date && !r.completed_at && new Date(r.due_date) < new Date()
+
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setSaving(true)
+    const fd = new FormData(e.currentTarget)
+    const result = await updateReminder(r.id, fd)
+    if (!result.error) setEditing(false)
+    setSaving(false)
+  }
+
+  if (editing) {
+    return (
+      <form onSubmit={handleSave} className={`px-4 py-3 border-b last:border-0 space-y-2 ${dim ? 'opacity-50' : ''}`}>
+        <input
+          name="title"
+          defaultValue={r.title}
+          required
+          autoFocus
+          placeholder="Reminder title"
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+        <textarea
+          name="details"
+          defaultValue={r.details ?? ''}
+          rows={2}
+          placeholder="Details (optional)"
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+        />
+        <input
+          type="date"
+          name="due_date"
+          defaultValue={r.due_date ?? ''}
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    )
+  }
 
   return (
     <div className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 ${dim ? 'opacity-50' : ''}`}>
@@ -78,14 +133,16 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
             {isOverdue ? ' — overdue' : ''}
           </p>
         )}
-        {r.snoozed_until && !r.completed_at && (
-          <p className="text-xs text-emerald-500 mt-0.5">
-            Snoozed until {format(new Date(r.snoozed_until), 'MMM d, h:mm a')}
-          </p>
-        )}
       </div>
       {!r.completed_at && (
         <div className="flex items-center gap-3 shrink-0 mt-0.5">
+          <button
+            onClick={() => setEditing(true)}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Edit"
+          >
+            <Pencil size={13} />
+          </button>
           <SnoozeMenu id={r.id} />
           <button
             onClick={() => completeReminder(r.id)}

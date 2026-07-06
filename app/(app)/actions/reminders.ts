@@ -43,6 +43,22 @@ export async function completeReminder(id: string) {
   return { success: true }
 }
 
+export async function updateReminder(id: string, formData: FormData) {
+  const title = (formData.get('title') as string)?.trim()
+  if (!title) return { error: 'Title is required' }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('reminders').update({
+    title,
+    details: (formData.get('details') as string) || null,
+    due_date: (formData.get('due_date') as string) || null,
+  }).eq('id', id)
+
+  if (error) return { error: 'Failed to update reminder' }
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
 export async function deleteReminder(id: string) {
   const supabase = await createClient()
   const { error } = await supabase.from('reminders').delete().eq('id', id)

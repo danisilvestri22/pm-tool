@@ -50,9 +50,9 @@ export default function FilterBar({ filters, onChange, companies }: Props) {
       </select>
       <select value={filters.priority} onChange={set('priority')} className={inputClass}>
         <option value="">All priorities</option>
-        <option value="high">High</option>
-        <option value="medium">Medium</option>
-        <option value="low">Low</option>
+        <option value="high">P1 — High</option>
+        <option value="medium">P2 — Medium</option>
+        <option value="low">P3 — Low</option>
       </select>
       <input
         value={filters.responsible}
