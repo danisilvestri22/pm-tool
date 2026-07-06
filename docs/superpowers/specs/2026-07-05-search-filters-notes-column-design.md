@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a company filter to the existing filter bar on All Tasks, and add an inline-editable notes column to the task list on company pages.
+**Goal:** Move search into the page header on All Tasks and company pages; add a company filter to the filter bar on All Tasks; add an inline-editable notes column to the task list on company pages.
 
-**Architecture:** FilterBar and its filter logic already exist in `TaskList.tsx` and are already wired into both All Tasks and company pages. The two remaining gaps are: (1) no company filter exists in FilterBar for filtering across companies on All Tasks; (2) no notes column exists in the task list. All filtering is client-side — tasks are already fetched on page load.
+**Architecture:** FilterBar and its filter logic already exist in `TaskList.tsx` and are wired into both pages. Three changes needed: (1) lift search out of FilterBar into page headers (AllTasksView, CompanyView); (2) add company filter dropdown to FilterBar on All Tasks; (3) add notes column to task list with inline editing. All filtering is client-side.
 
 **Tech Stack:** Next.js App Router, React 19, Tailwind v4, Supabase SSR. `notes text` column already exists in the `tasks` table. No DB migration needed.
 
@@ -12,7 +12,7 @@
 
 ## What's already built (do not re-implement)
 
-- `components/tasks/FilterBar.tsx` — full filter UI with search, status, priority, responsible, sort
+- `components/tasks/FilterBar.tsx` — filter UI with search, status, priority, responsible, sort
 - `components/tasks/TaskList.tsx` — already imports and renders FilterBar with full filter/sort logic
 - `notes` field — already in `Task` type, `tasks` DB table, `TaskForm`, and read-only display in `TaskPanel`
 - `updateTask` server action — already handles `notes` field
@@ -21,7 +21,76 @@
 
 ## Scope
 
-### Task 1: Company filter in FilterBar
+### Task 1: Move search to page headers
+
+Search moves out of FilterBar and into the header row of each page, alongside the page title and controls.
+
+**Files:**
+- Modify: `components/tasks/FilterBar.tsx`
+- Modify: `components/tasks/TaskList.tsx`
+- Modify: `app/(app)/tasks/AllTasksView.tsx`
+- Modify: `app/(app)/company/[id]/CompanyView.tsx`
+
+**FilterBar changes:**
+- Remove the `search` input and `search` field from the `Filters` interface and `defaultFilters`
+- Remove `search` from the filter logic in TaskList (search is handled externally)
+
+**TaskList changes:**
+- Accept `search?: string` prop
+- Use `search` prop in the filter logic instead of `filters.search`:
+  ```ts
+  const q = (search ?? '').toLowerCase()
+  const matchSearch =
+    !q ||
+    t.name.toLowerCase().includes(q) ||
+    t.responsible?.toLowerCase().includes(q) ||
+    t.notes?.toLowerCase().includes(q) ||
+    t.waiting_on?.toLowerCase().includes(q)
+  ```
+- Pass `search` through to wherever it's used (not to FilterBar)
+
+**AllTasksView changes:**
+- Add `useState<string>('')` for `search`
+- Add search input to the header row, inline with the "All Tasks" title and ViewToggle:
+  ```tsx
+  <div className="flex items-center justify-between mb-4">
+    <h1 className="text-xl font-semibold text-gray-900">All Tasks</h1>
+    <div className="flex items-center gap-2">
+      <input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Search tasks…"
+        className="border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white w-48"
+      />
+      <ViewToggle view={view} onChange={setView} />
+    </div>
+  </div>
+  ```
+- Pass `search` to `<TaskList search={search} ... />`
+
+**CompanyView changes:**
+- Add `useState<string>('')` for `search`
+- Add search input to the header row, inline with company name, Export CSV, and ViewToggle:
+  ```tsx
+  <div className="flex items-center justify-between mb-4">
+    <h1 className="text-xl font-semibold text-gray-900">{company.name}</h1>
+    <div className="flex items-center gap-2">
+      <input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Search tasks…"
+        className="border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white w-48"
+      />
+      <a href={`/api/export/${company.id}`} download ...>Export CSV</a>
+      <ViewToggle view={view} onChange={setView} />
+    </div>
+  </div>
+  ```
+- Pass `search` to `<TaskList search={search} ... />`
+
+---
+
+### Task 2: Company filter in FilterBar
 
 **Files:**
 - Modify: `components/tasks/FilterBar.tsx`
@@ -52,7 +121,7 @@
 
 ---
 
-### Task 2: Notes column in task list
+### Task 3: Notes column in task list
 
 **Files:**
 - Modify: `components/tasks/TaskList.tsx`
@@ -65,7 +134,7 @@
     ? ['Task', 'Company', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
     : ['Task', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
   ```
-- Update `gridTemplateColumns` in both the header and (via TaskRow) the rows to include a notes column. Add `200px` at the end:
+- Update `gridTemplateColumns` in the header to include notes column (`200px` at the end):
   ```ts
   showCompany
     ? '2fr 1fr 1fr 110px 120px 120px 120px 200px'
@@ -131,18 +200,18 @@ style={{
 ## Out of scope
 
 - Notes column on All Tasks — company pages only (All Tasks is already wide; adding notes there would overcrowd it)
-- Inline notes editing in TaskPanel — editing goes through the existing edit form (pencil icon). TaskPanel already displays notes read-only; this is sufficient for now.
+- Inline notes editing in TaskPanel — editing goes through the existing edit form (pencil icon). TaskPanel already displays notes read-only.
 - Overdue filter — not requested; can be added later
-- Server-side filtering — not needed; all tasks are fetched on load and filtering is fast client-side
+- Server-side filtering — not needed; all tasks are fetched on load
 
 ---
 
 ## Self-review log
 
-- **Data export:** N/A — UI-only changes; notes field already exists in DB and is included in CSV export
-- **Search:** Already implemented in TaskList; this spec adds company filter only
+- **Data export:** N/A — UI-only changes; notes field already in DB and CSV export
+- **Search:** Lifted to page header; search logic stays in TaskList receiving it as a prop
 - **Empty states:** "No tasks match your filters" already handled in TaskList; notes column shows "—" for empty
-- **Error handling:** Notes save uses same `updateTask` action as all other task fields; same error surface
+- **Error handling:** Notes save uses same `updateTask` action as all other task fields
 - **Timezone:** N/A — no date fields changed
 - **Multi-user:** N/A — same RLS as rest of app
-- **Over-engineering:** No new tables, no new server actions, no new abstractions — two files modified
+- **Over-engineering:** No new tables, no new server actions, no new abstractions
