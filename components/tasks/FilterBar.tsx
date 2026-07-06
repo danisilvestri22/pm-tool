@@ -5,7 +5,6 @@ export interface Filters {
   status: Status | ''
   priority: Priority | ''
   responsible: string
-  search: string
   sortBy: 'due_date' | 'priority' | 'status' | 'created_at'
 }
 
@@ -13,7 +12,6 @@ export const defaultFilters: Filters = {
   status: '',
   priority: '',
   responsible: '',
-  search: '',
   sortBy: 'due_date',
 }
 
@@ -33,12 +31,6 @@ export default function FilterBar({ filters, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      <input
-        value={filters.search}
-        onChange={set('search')}
-        placeholder="Search tasks…"
-        className={`${inputClass} w-48`}
-      />
       <select value={filters.status} onChange={set('status')} className={inputClass}>
         <option value="">All statuses</option>
         <option value="on_track">On track</option>

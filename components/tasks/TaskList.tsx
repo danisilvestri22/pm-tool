@@ -13,9 +13,10 @@ interface Props {
   showCompany?: boolean
   companies?: Record<string, string>
   people?: string[]
+  search?: string
 }
 
-export default function TaskList({ tasks, showCompany, companies = {}, people = [] }: Props) {
+export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '' }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
@@ -28,7 +29,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
 
   const filtered = topLevel
     .filter(t => {
-      const q = filters.search.toLowerCase()
+      const q = search.toLowerCase()
       const matchSearch =
         !q ||
         t.name.toLowerCase().includes(q) ||
