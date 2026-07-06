@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, Plus, Upload, Settings, Trash2, Menu, X, Bell } from 'lucide-react'
+import { LayoutGrid, Plus, Settings, Trash2, Menu, X, Bell } from 'lucide-react'
 import type { Company } from '@/types/database'
 
 interface Props {
@@ -55,13 +55,9 @@ export default function Sidebar({ companies }: Props) {
         <Plus size={14} />
         Add company
       </Link>
-      <Link href="/import" className={linkClass(pathname === '/import')} onClick={() => setMobileOpen(false)}>
-        <Upload size={14} />
-        Import from Asana
-      </Link>
-      <Link href="/settings" className={linkClass(pathname === '/settings')} onClick={() => setMobileOpen(false)}>
+<Link href="/settings" className={linkClass(pathname === '/settings')} onClick={() => setMobileOpen(false)}>
         <Settings size={14} />
-        Settings & links
+        Settings & Links
       </Link>
       <Link
         href="/trash"
@@ -106,7 +102,7 @@ export default function Sidebar({ companies }: Props) {
         `}
       >
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-          <span className="font-semibold text-white">PM Tool</span>
+          <span className="font-semibold text-white">Project Tracker</span>
           <button
             className="md:hidden text-slate-400 hover:text-white"
             onClick={() => setMobileOpen(false)}
