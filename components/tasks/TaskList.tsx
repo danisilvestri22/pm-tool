@@ -41,7 +41,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
       const matchResponsible =
         !filters.responsible ||
         t.responsible?.toLowerCase().includes(filters.responsible.toLowerCase())
-      return matchSearch && matchStatus && matchPriority && matchResponsible
+      const matchCompany = !filters.company || t.company_id === filters.company
+      return matchSearch && matchStatus && matchPriority && matchResponsible && matchCompany
     })
     .sort((a, b) => {
       if (filters.sortBy === 'due_date') {
@@ -62,7 +63,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <FilterBar filters={filters} onChange={setFilters} />
+      <FilterBar filters={filters} onChange={setFilters} companies={showCompany ? companies : undefined} />
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">

@@ -5,6 +5,7 @@ export interface Filters {
   status: Status | ''
   priority: Priority | ''
   responsible: string
+  company: string
   sortBy: 'due_date' | 'priority' | 'status' | 'created_at'
 }
 
@@ -12,15 +13,17 @@ export const defaultFilters: Filters = {
   status: '',
   priority: '',
   responsible: '',
+  company: '',
   sortBy: 'due_date',
 }
 
 interface Props {
   filters: Filters
   onChange: (f: Filters) => void
+  companies?: Record<string, string>
 }
 
-export default function FilterBar({ filters, onChange }: Props) {
+export default function FilterBar({ filters, onChange, companies }: Props) {
   const set =
     (key: keyof Filters) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
@@ -31,6 +34,14 @@ export default function FilterBar({ filters, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">
+      {companies && Object.keys(companies).length > 0 && (
+        <select value={filters.company} onChange={set('company')} className={inputClass}>
+          <option value="">All companies</option>
+          {Object.entries(companies).map(([id, name]) => (
+            <option key={id} value={id}>{name}</option>
+          ))}
+        </select>
+      )}
       <select value={filters.status} onChange={set('status')} className={inputClass}>
         <option value="">All statuses</option>
         <option value="on_track">On track</option>
