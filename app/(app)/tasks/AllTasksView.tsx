@@ -20,12 +20,14 @@ export default function AllTasksView({ tasks, companies, people }: Props) {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-gray-900">All Tasks</h1>
         <div className="flex items-center gap-2">
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search tasks…"
-            className="border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white w-48"
-          />
+          {view === 'list' && (
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search tasks…"
+              className="border rounded-lg px-2 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white w-48"
+            />
+          )}
           <ViewToggle view={view} onChange={setView} />
         </div>
       </div>
