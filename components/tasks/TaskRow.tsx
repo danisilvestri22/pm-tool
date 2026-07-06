@@ -210,7 +210,9 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             onChange={e => setNotesVal(e.target.value)}
             onBlur={async () => {
               setEditingNotes(false)
-              save('notes', notesVal)
+              if (notesVal !== (task.notes ?? '')) {
+                save('notes', notesVal)
+              }
             }}
             onKeyDown={e => {
               if (e.key === 'Escape') {
