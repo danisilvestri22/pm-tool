@@ -17,6 +17,21 @@ const TaskSchema = z.object({
   parent_task_id: z.string().uuid().optional().nullable(),
 })
 
+// Update schema has no .default() — we must never fill in values the caller didn't provide.
+const UpdateTaskSchema = z.object({
+  name: z.string().min(1).max(500),
+  responsible: z.string().nullable(),
+  status: z.enum(['on_track', 'at_risk', 'completed']),
+  priority: z.enum(['high', 'medium', 'low']),
+  due_date: z.string().nullable(),
+  followup_date: z.string().nullable(),
+  waiting_on: z.string().nullable(),
+  notes: z.string().nullable(),
+  board_column: z.enum(['todo', 'in_progress', 'done']),
+  parent_task_id: z.string().uuid().nullable(),
+}).partial()
+
+// Used for createTask: fills all nullable fields with null if absent.
 function coerce(raw: Record<string, FormDataEntryValue>) {
   return {
     ...raw,
@@ -27,6 +42,14 @@ function coerce(raw: Record<string, FormDataEntryValue>) {
     notes: raw.notes || null,
     parent_task_id: raw.parent_task_id || null,
   }
+}
+
+// Used for updateTask: only converts empty strings to null for keys that are present.
+// Missing keys stay absent so Supabase doesn't overwrite them.
+function coerceUpdate(raw: Record<string, FormDataEntryValue>) {
+  return Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k, v === '' ? null : v])
+  )
 }
 
 export async function createTask(formData: FormData) {
@@ -44,7 +67,7 @@ export async function createTask(formData: FormData) {
 
 export async function updateTask(id: string, formData: FormData) {
   const raw = Object.fromEntries(formData.entries())
-  const parsed = TaskSchema.partial().omit({ company_id: true }).safeParse(coerce(raw))
+  const parsed = UpdateTaskSchema.safeParse(coerceUpdate(raw))
   if (!parsed.success) return { error: 'Invalid task data' }
 
   const supabase = await createClient()
