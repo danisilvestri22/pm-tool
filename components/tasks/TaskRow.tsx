@@ -14,11 +14,60 @@ interface Props {
   onSelect: (task: Task) => void
 }
 
+function NotesModal({ taskName, initialValue, onSave, onCancel }: {
+  taskName: string
+  initialValue: string
+  onSave: (value: string) => void
+  onCancel: () => void
+}) {
+  const [value, setValue] = useState(initialValue)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-5"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium text-gray-900 text-sm truncate pr-4">{taskName}</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+        </div>
+        <textarea
+          autoFocus
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Escape') onCancel() }}
+          rows={8}
+          placeholder="Add a note…"
+          className="w-full border rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+        />
+        <div className="flex gap-2 mt-3 justify-end">
+          <button
+            onClick={onCancel}
+            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave(value)}
+            className="bg-emerald-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-emerald-700"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], onSelect }: Props) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal, setNameVal] = useState(task.name)
-  const [editingNotes, setEditingNotes] = useState(false)
   const [notesVal, setNotesVal] = useState(task.notes ?? '')
+  const [notesModalOpen, setNotesModalOpen] = useState(false)
   const [vals, setVals] = useState({
     responsible: task.responsible ?? '',
     status: task.status,
@@ -31,9 +80,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
   useEffect(() => {
     setNameVal(task.name)
-    if (!editingNotes) {
-      setNotesVal(task.notes ?? '')
-    }
+    setNotesVal(task.notes ?? '')
     setVals({
       responsible: task.responsible ?? '',
       status: task.status,
@@ -245,43 +292,36 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             {people.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
 
-          {/* Notes */}
-          {editingNotes ? (
-            <textarea
-              autoFocus
-              value={notesVal}
-              onChange={e => setNotesVal(e.target.value)}
-              onBlur={async () => {
-                setEditingNotes(false)
-                if (notesVal !== (task.notes ?? '')) {
-                  const oldNotes = task.notes ?? ''
-                  save('notes', notesVal)
-                  showUndo('Note saved', () => {
-                    setNotesVal(oldNotes)
-                    save('notes', oldNotes)
-                  })
-                }
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Escape') {
-                  setNotesVal(task.notes ?? '')
-                  setEditingNotes(false)
-                }
-              }}
-              rows={3}
-              className="text-xs border border-emerald-400 rounded px-1.5 py-1 w-full focus:outline-none resize-none"
-            />
-          ) : (
-            <button
-              onClick={() => setEditingNotes(true)}
-              className="text-xs text-gray-500 truncate block w-full text-left hover:text-gray-800 transition-colors"
-              title={notesVal || undefined}
-            >
-              {notesVal || <span className="text-gray-300">—</span>}
-            </button>
-          )}
+          {/* Notes — click to open modal */}
+          <button
+            onClick={() => setNotesModalOpen(true)}
+            className="text-xs text-gray-500 truncate block w-full text-left hover:text-gray-800 transition-colors"
+            title={notesVal || 'Click to add a note'}
+          >
+            {notesVal || <span className="text-gray-300">—</span>}
+          </button>
         </div>
       </div>
+
+      {notesModalOpen && (
+        <NotesModal
+          taskName={task.name}
+          initialValue={notesVal}
+          onSave={value => {
+            setNotesModalOpen(false)
+            if (value !== (task.notes ?? '')) {
+              const oldNotes = task.notes ?? ''
+              setNotesVal(value)
+              save('notes', value)
+              showUndo('Note saved', () => {
+                setNotesVal(oldNotes)
+                save('notes', oldNotes)
+              })
+            }
+          }}
+          onCancel={() => setNotesModalOpen(false)}
+        />
+      )}
 
       {toast && (
         <Toast

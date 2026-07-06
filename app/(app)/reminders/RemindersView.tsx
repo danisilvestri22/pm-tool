@@ -41,7 +41,7 @@ function SnoozeMenu({ id }: { id: string }) {
         <ChevronDown size={10} />
       </button>
       {open && (
-        <div className="absolute right-0 top-6 bg-white border rounded-lg shadow-lg z-10 min-w-28 py-1">
+        <div className="absolute right-0 top-6 bg-white border rounded-lg shadow-lg z-50 min-w-28 py-1">
           {options.map(o => (
             <button
               key={o.label}
@@ -188,7 +188,7 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
       ) : (
         <>
           {active.length > 0 && (
-            <div className="bg-white border rounded-xl overflow-hidden mb-4">
+            <div className="bg-white border rounded-xl mb-4">
               {active.map(r => <ReminderRow key={r.id} r={r} />)}
             </div>
           )}
@@ -196,7 +196,7 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
           {snoozed.length > 0 && (
             <div className="mb-4">
               <p className="text-xs text-gray-400 uppercase tracking-wide px-1 mb-2">Snoozed</p>
-              <div className="bg-white border rounded-xl overflow-hidden">
+              <div className="bg-white border rounded-xl">
                 {snoozed.map(r => <ReminderRow key={r.id} r={r} dim />)}
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
             {showCompleted ? 'Hide' : 'Show'} {completed.length} completed
           </button>
           {showCompleted && (
-            <div className="bg-white border rounded-xl overflow-hidden">
+            <div className="bg-white border rounded-xl">
               {completed.map(r => <ReminderRow key={r.id} r={r} />)}
             </div>
           )}
