@@ -40,7 +40,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
       const matchPriority = !filters.priority || t.priority === filters.priority
       const matchResponsible =
         !filters.responsible ||
-        t.responsible?.toLowerCase().includes(filters.responsible.toLowerCase())
+        t.responsible?.toLowerCase().includes(filters.responsible.toLowerCase()) ||
+        t.waiting_on?.toLowerCase().includes(filters.responsible.toLowerCase())
       const matchCompany = !filters.company || t.company_id === filters.company
       return matchSearch && matchStatus && matchPriority && matchResponsible && matchCompany
     })
