@@ -16,6 +16,8 @@ interface Props {
 export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], onSelect }: Props) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal, setNameVal] = useState(task.name)
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesVal, setNotesVal] = useState(task.notes ?? '')
   const [vals, setVals] = useState({
     responsible: task.responsible ?? '',
     status: task.status,
@@ -26,6 +28,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
   useEffect(() => {
     setNameVal(task.name)
+    setNotesVal(task.notes ?? '')
     setVals({
       responsible: task.responsible ?? '',
       status: task.status,
@@ -90,11 +93,11 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
         className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm"
         style={{
           gridTemplateColumns: showCompany
-            ? '2fr 1fr 1fr 110px 120px 120px 120px'
-            : '2fr 1fr 110px 120px 120px 120px',
+            ? '2fr 1fr 1fr 110px 120px 120px 120px 200px'
+            : '2fr 1fr 110px 120px 120px 120px 200px',
         }}
       >
-        {/* Task name — click to edit, double-click or icon to open panel */}
+        {/* Task name — click to edit, double-click to open panel */}
         <div className="flex items-center gap-1 min-w-0">
           {editingName ? (
             <input
@@ -198,6 +201,35 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           <option value="">—</option>
           {people.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
+
+        {/* Notes — click to edit inline */}
+        {editingNotes ? (
+          <textarea
+            autoFocus
+            value={notesVal}
+            onChange={e => setNotesVal(e.target.value)}
+            onBlur={async () => {
+              setEditingNotes(false)
+              save('notes', notesVal)
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                setNotesVal(task.notes ?? '')
+                setEditingNotes(false)
+              }
+            }}
+            rows={3}
+            className="text-xs border border-emerald-400 rounded px-1.5 py-1 w-full focus:outline-none resize-none"
+          />
+        ) : (
+          <button
+            onClick={() => setEditingNotes(true)}
+            className="text-xs text-gray-500 truncate block w-full text-left hover:text-gray-800 transition-colors"
+            title={notesVal || undefined}
+          >
+            {notesVal || <span className="text-gray-300">—</span>}
+          </button>
+        )}
       </div>
     </div>
   )

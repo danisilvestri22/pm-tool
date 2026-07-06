@@ -58,8 +58,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
     })
 
   const columns = showCompany
-    ? ['Task', 'Company', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on']
-    : ['Task', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on']
+    ? ['Task', 'Company', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
+    : ['Task', 'Responsible', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -83,8 +83,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
               className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
               style={{
                 gridTemplateColumns: showCompany
-                  ? '2fr 1fr 1fr 110px 120px 120px 120px'
-                  : '2fr 1fr 110px 120px 120px 120px',
+                  ? '2fr 1fr 1fr 110px 120px 120px 120px 200px'
+                  : '2fr 1fr 110px 120px 120px 120px 200px',
               }}
             >
               {columns.map(col => (
