@@ -28,7 +28,9 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
   useEffect(() => {
     setNameVal(task.name)
-    setNotesVal(task.notes ?? '')
+    if (!editingNotes) {
+      setNotesVal(task.notes ?? '')
+    }
     setVals({
       responsible: task.responsible ?? '',
       status: task.status,
