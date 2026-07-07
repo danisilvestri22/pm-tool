@@ -67,7 +67,26 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
       className="hidden sm:grid items-center gap-3 pr-4 py-1.5 text-sm bg-gray-50/70 border-l-[3px] border-emerald-200"
       style={{ gridTemplateColumns: gridCols(showCompany, showReminder) }}
     >
-      <div className="flex items-center gap-1 min-w-0 pl-10">
+      <div className="flex items-center gap-2 min-w-0 pl-6">
+        <button
+          onClick={() => {
+            const next = vals.status === 'done' ? 'not_started' : 'done'
+            setVals(v => ({ ...v, status: next }))
+            save('status', next)
+          }}
+          className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+            vals.status === 'done'
+              ? 'border-emerald-500 bg-emerald-500 text-white'
+              : 'border-gray-300 hover:border-emerald-400'
+          }`}
+          title={vals.status === 'done' ? 'Mark incomplete' : 'Mark done'}
+        >
+          {vals.status === 'done' && (
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+              <path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </button>
         {editingName ? (
           <input
             autoFocus
@@ -86,7 +105,7 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
           />
         ) : (
           <span
-            className="text-sm text-gray-600 cursor-pointer hover:text-emerald-600 break-words"
+            className={`text-sm cursor-pointer break-words ${vals.status === 'done' ? 'line-through text-gray-400' : 'text-gray-600 hover:text-emerald-600'}`}
             onClick={() => setEditingName(true)}
             title="Click to edit"
           >
