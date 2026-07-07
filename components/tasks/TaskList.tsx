@@ -37,7 +37,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
         t.responsible?.toLowerCase().includes(q) ||
         t.notes?.toLowerCase().includes(q) ||
         t.waiting_on?.toLowerCase().includes(q)
-      const matchStatus = !filters.status || t.status === filters.status
+      const matchStatus = filters.statuses.length === 0 || filters.statuses.includes(t.status)
       const matchPriority = !filters.priority || t.priority === filters.priority
       const matchResponsible =
         !filters.responsible ||
