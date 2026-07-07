@@ -20,9 +20,7 @@ export default async function RemindersPage() {
     supabase.from('people').select('name').order('name'),
   ])
 
-  const now = new Date().toISOString()
-  const active = (allReminders ?? []).filter(r => !r.completed_at && (!r.snoozed_until || r.snoozed_until <= now))
-  const snoozed = (allReminders ?? []).filter(r => !r.completed_at && r.snoozed_until && r.snoozed_until > now)
+  const active = (allReminders ?? []).filter(r => !r.completed_at)
   const completed = (allReminders ?? []).filter(r => r.completed_at)
 
   const pinnedTaskIds = (pins ?? []).map(p => p.task_id)
@@ -45,7 +43,6 @@ export default async function RemindersPage() {
   return (
     <RemindersView
       active={active}
-      snoozed={snoozed}
       completed={completed}
       pinnedTasks={pinnedTasks}
       reminderDates={reminderDates}

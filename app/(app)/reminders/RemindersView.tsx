@@ -1,8 +1,8 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import { format, addHours, addDays } from 'date-fns'
+import { format, addDays } from 'date-fns'
 import { Bell, Check, Clock, Trash2, Plus, ChevronDown, ChevronRight, Pencil, Pin } from 'lucide-react'
-import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask, setTaskReminderDate } from '@/app/(app)/actions/reminders'
+import { createReminder, updateReminder, snoozeReminder, unsnoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask, setTaskReminderDate } from '@/app/(app)/actions/reminders'
 import StatusBadge from '@/components/tasks/StatusBadge'
 import type { Task } from '@/types/database'
 
@@ -18,7 +18,6 @@ interface Reminder {
 
 interface Props {
   active: Reminder[]
-  snoozed: Reminder[]
   completed: Reminder[]
   pinnedTasks: Task[]
   reminderDates: Record<string, string | null>
@@ -53,19 +52,19 @@ function getGroup(dueDate: string | null): GroupKey {
   return 'scheduled'
 }
 
-function SnoozeMenu({ id }: { id: string }) {
+function SnoozeMenu({ id, snoozedUntil }: { id: string; snoozedUntil: string | null }) {
   const [open, setOpen] = useState(false)
+  const isSnoozed = !!snoozedUntil && snoozedUntil > new Date().toISOString()
   const options = [
-    { label: '1 hour',  until: addHours(new Date(), 1).toISOString() },
     { label: 'Tomorrow', until: addDays(new Date(), 1).toISOString() },
-    { label: '3 days',  until: addDays(new Date(), 3).toISOString() },
-    { label: '1 week',  until: addDays(new Date(), 7).toISOString() },
+    { label: '2 days',   until: addDays(new Date(), 2).toISOString() },
+    { label: 'Next week', until: addDays(new Date(), 7).toISOString() },
   ]
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1 text-xs text-gray-400 hover:text-emerald-600 transition-colors"
+        className={`flex items-center gap-1 text-xs transition-colors ${isSnoozed ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-emerald-600'}`}
       >
         <Clock size={12} />
         Snooze
@@ -73,6 +72,14 @@ function SnoozeMenu({ id }: { id: string }) {
       </button>
       {open && (
         <div className="absolute right-0 top-6 bg-white border rounded-lg shadow-lg z-50 min-w-28 py-1">
+          {isSnoozed && (
+            <button
+              onClick={async () => { setOpen(false); await unsnoozeReminder(id) }}
+              className="w-full text-left px-3 py-1.5 text-xs text-emerald-600 hover:bg-gray-50 font-medium border-b border-gray-100"
+            >
+              Unsnooze
+            </button>
+          )}
           {options.map(o => (
             <button
               key={o.label}
@@ -88,11 +95,12 @@ function SnoozeMenu({ id }: { id: string }) {
   )
 }
 
-function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
+function ReminderRow({ r }: { r: Reminder }) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const isSnoozed = !!r.snoozed_until && r.snoozed_until > new Date().toISOString()
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-  const isOverdue = r.due_date && !r.completed_at && new Date(r.due_date + 'T12:00:00') < todayStart
+  const isOverdue = !isSnoozed && r.due_date && !r.completed_at && new Date(r.due_date + 'T12:00:00') < todayStart
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -105,7 +113,7 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
 
   if (editing) {
     return (
-      <form onSubmit={handleSave} className={`px-4 py-3 border-b last:border-0 space-y-2 ${dim ? 'opacity-50' : ''}`}>
+      <form onSubmit={handleSave} className="px-4 py-3 border-b last:border-0 space-y-2">
         <input name="title" defaultValue={r.title} required autoFocus placeholder="Reminder title"
           className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
         <textarea name="details" defaultValue={r.details ?? ''} rows={2} placeholder="Details (optional)"
@@ -126,7 +134,7 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   }
 
   return (
-    <div className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 ${dim ? 'opacity-50' : ''}`}>
+    <div className="flex items-start gap-3 px-4 py-3 border-b last:border-0">
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-medium ${r.completed_at ? 'line-through text-gray-400' : 'text-gray-900'}`}>{r.title}</p>
         {r.details && <p className="text-xs text-gray-500 mt-0.5 whitespace-pre-wrap">{r.details}</p>}
@@ -135,13 +143,19 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
             Due {format(new Date(r.due_date + 'T12:00:00'), 'MMM d, yyyy')}{isOverdue ? ' — overdue' : ''}
           </p>
         )}
+        {isSnoozed && (
+          <p className="text-xs mt-1 text-amber-500 flex items-center gap-1">
+            <Clock size={10} />
+            Snoozed until {format(new Date(r.snoozed_until!.slice(0, 10) + 'T12:00:00'), 'MMM d')}
+          </p>
+        )}
       </div>
       {!r.completed_at && (
         <div className="flex items-center gap-3 shrink-0 mt-0.5">
           <button onClick={() => setEditing(true)} className="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Edit">
             <Pencil size={13} />
           </button>
-          <SnoozeMenu id={r.id} />
+          <SnoozeMenu id={r.id} snoozedUntil={r.snoozed_until} />
           <button onClick={() => completeReminder(r.id)} className="text-gray-400 hover:text-green-500 transition-colors" aria-label="Mark done">
             <Check size={14} />
           </button>
@@ -257,7 +271,7 @@ function GroupSection({
   )
 }
 
-export default function RemindersView({ active, snoozed, completed, pinnedTasks, reminderDates, companies, people }: Props) {
+export default function RemindersView({ active, completed, pinnedTasks, reminderDates, companies, people }: Props) {
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
@@ -297,7 +311,11 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
   }, [active, pinnedTasks, myTasks, showTasks, reminderDates])
 
   function itemDate(item: ListItem): string | null {
-    if (item.kind === 'reminder') return item.data.due_date
+    if (item.kind === 'reminder') {
+      const r = item.data
+      if (r.snoozed_until && r.snoozed_until > new Date().toISOString()) return r.snoozed_until.slice(0, 10)
+      return r.due_date
+    }
     return item.reminderDate
   }
 
@@ -393,7 +411,7 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
         </form>
       )}
 
-      {allItems.length === 0 && snoozed.length === 0 ? (
+      {allItems.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <Bell size={32} className="mx-auto mb-2 opacity-30" />
           <p className="text-sm">No active reminders.</p>
@@ -411,14 +429,6 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
             />
           ))}
 
-          {snoozed.length > 0 && (
-            <div className="mb-3">
-              <p className="text-xs text-gray-400 uppercase tracking-wide px-1 mb-2">Snoozed</p>
-              <div className="bg-white border border-gray-200 rounded-xl">
-                {snoozed.map(r => <ReminderRow key={r.id} r={r} dim />)}
-              </div>
-            </div>
-          )}
         </>
       )}
 

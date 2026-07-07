@@ -33,6 +33,17 @@ export async function snoozeReminder(id: string, until: string) {
   return { success: true }
 }
 
+export async function unsnoozeReminder(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('reminders')
+    .update({ snoozed_until: null })
+    .eq('id', id)
+  if (error) return { error: 'Failed to unsnooze' }
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
 export async function completeReminder(id: string) {
   const supabase = await createClient()
   const { error } = await supabase
