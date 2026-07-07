@@ -29,8 +29,8 @@ export default function BoardCard({ task, subtaskCount = 0, onSelect }: Props) {
       {...listeners}
       {...attributes}
       onClick={() => onSelect(task)}
-      className={`w-full text-left bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing select-none ${
-        isDragging ? 'opacity-50 shadow-lg' : ''
+      className={`w-full text-left bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow select-none ${
+        isDragging ? 'cursor-grabbing opacity-50 shadow-lg' : 'cursor-grab'
       }`}
     >
       <p className="text-sm font-medium text-gray-900 mb-2">{task.name}</p>
