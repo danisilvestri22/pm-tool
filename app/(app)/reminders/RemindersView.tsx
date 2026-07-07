@@ -258,22 +258,14 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
   useEffect(() => {
     localStorage.setItem('reminders_show_tasks', showTasks ? 'true' : 'false')
     if (!showTasks) { setMyTasks([]); return }
-    if (myName) fetchMyTasks()
-  }, [showTasks])
+    if (!myName) return
+    setLoadingTasks(true)
+    getMyTasks(myName).then(tasks => { setMyTasks(tasks); setLoadingTasks(false) })
+  }, [showTasks, myName])
 
   useEffect(() => {
     localStorage.setItem('reminders_my_name', myName)
-    if (showTasks && myName) fetchMyTasks()
-    else if (!myName) setMyTasks([])
   }, [myName])
-
-  async function fetchMyTasks() {
-    if (!myName) return
-    setLoadingTasks(true)
-    const tasks = await getMyTasks(myName)
-    setMyTasks(tasks)
-    setLoadingTasks(false)
-  }
 
   const allItems = useMemo<ListItem[]>(() => {
     const items: ListItem[] = active.map(r => ({ kind: 'reminder', data: r }))
