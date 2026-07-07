@@ -1,12 +1,87 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutGrid, Plus, Settings, Trash2, Menu, X, Bell } from 'lucide-react'
+import { createReminder } from '@/app/(app)/actions/reminders'
 import type { Company } from '@/types/database'
 
 interface Props {
   companies: Pick<Company, 'id' | 'name'>[]
+}
+
+function QuickAddReminder() {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    const fd = new FormData(e.currentTarget)
+    const result = await createReminder(fd)
+    if (result?.success) {
+      setOpen(false)
+      ;(e.target as HTMLFormElement).reset()
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-0.5 text-slate-400 hover:text-emerald-400 transition-colors"
+        aria-label="Quick add reminder"
+      >
+        <Bell size={14} />
+        <Plus size={10} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-8 bg-white border rounded-xl shadow-lg p-4 w-64 z-50">
+          <p className="text-xs font-semibold text-gray-700 mb-3">Quick reminder</p>
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <input
+              name="title"
+              required
+              autoFocus
+              placeholder="What do you need to remember?"
+              className="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <input
+              type="date"
+              name="due_date"
+              className="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <div className="flex gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {loading ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function Sidebar({ companies }: Props) {
@@ -55,7 +130,7 @@ export default function Sidebar({ companies }: Props) {
         <Plus size={14} />
         Add company
       </Link>
-<Link href="/settings" className={linkClass(pathname === '/settings')} onClick={() => setMobileOpen(false)}>
+      <Link href="/settings" className={linkClass(pathname === '/settings')} onClick={() => setMobileOpen(false)}>
         <Settings size={14} />
         Settings & Links
       </Link>
@@ -76,7 +151,6 @@ export default function Sidebar({ companies }: Props) {
 
   return (
     <>
-      {/* Mobile hamburger button */}
       <button
         className="fixed top-3 left-3 z-50 md:hidden bg-white border rounded-lg p-1.5 shadow-sm"
         onClick={() => setMobileOpen(true)}
@@ -85,7 +159,6 @@ export default function Sidebar({ companies }: Props) {
         <Menu size={18} />
       </button>
 
-      {/* Mobile backdrop */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-40 md:hidden"
@@ -93,7 +166,6 @@ export default function Sidebar({ companies }: Props) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
           fixed md:relative inset-y-0 left-0 z-50 w-56 bg-slate-800 border-r border-slate-700 flex flex-col h-full shrink-0
@@ -103,13 +175,16 @@ export default function Sidebar({ companies }: Props) {
       >
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
           <span className="font-semibold text-white">Project Tracker</span>
-          <button
-            className="md:hidden text-slate-400 hover:text-white"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close menu"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <QuickAddReminder />
+            <button
+              className="md:hidden text-slate-400 hover:text-white"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
         <nav className="flex-1 overflow-y-auto p-2">{nav}</nav>
         <div className="p-2 border-t border-slate-700 space-y-0.5">{bottom}</div>
