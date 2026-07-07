@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { format, addDays } from 'date-fns'
 import { Bell, Check, Clock, Trash2, Plus, ChevronDown, ChevronRight, Pencil, Pin } from 'lucide-react'
 import { createReminder, updateReminder, snoozeReminder, unsnoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask, setTaskReminderDate } from '@/app/(app)/actions/reminders'
@@ -54,14 +54,23 @@ function getGroup(dueDate: string | null): GroupKey {
 
 function SnoozeMenu({ id, snoozedUntil }: { id: string; snoozedUntil: string | null }) {
   const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
   const isSnoozed = !!snoozedUntil && snoozedUntil > new Date().toISOString()
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
   const options = [
     { label: 'Tomorrow', until: addDays(new Date(), 1).toISOString() },
     { label: '2 days',   until: addDays(new Date(), 2).toISOString() },
     { label: 'Next week', until: addDays(new Date(), 7).toISOString() },
   ]
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
         className={`flex items-center gap-1 text-xs transition-colors ${isSnoozed ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-emerald-600'}`}

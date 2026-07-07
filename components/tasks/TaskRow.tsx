@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
-import { Pin, ChevronRight, ChevronDown } from 'lucide-react'
+import { Pin } from 'lucide-react'
 import { updateTask } from '@/app/(app)/actions/tasks'
 import { pinTask, unpinTask } from '@/app/(app)/actions/reminders'
 import type { Task } from '@/types/database'
@@ -80,7 +80,6 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
     followup_date: task.followup_date ?? '',
     waiting_on: task.waiting_on ?? '',
   })
-  const [expanded, setExpanded] = useState(false)
   const [toast, setToast] = useState<{ id: number; message: string; undo: () => void } | null>(null)
   const [pinned, setPinned] = useState(pinnedTaskIds.includes(task.id))
   const toastIdRef = useRef(0)
@@ -187,13 +186,6 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
         >
           {/* Task name */}
           <div className="group/row flex items-center gap-1 min-w-0">
-            <button
-              onClick={() => setExpanded(e => !e)}
-              className="shrink-0 text-gray-300 hover:text-gray-500 transition-colors"
-              title={expanded ? 'Collapse' : 'Expand'}
-            >
-              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-            </button>
             {editingName ? (
               <input
                 autoFocus
@@ -224,7 +216,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
               <button
                 onClick={() => setEditingName(true)}
                 onDoubleClick={() => onSelect(task)}
-                className={`font-medium text-gray-900 text-left hover:text-emerald-600 transition-colors py-1 text-sm ${expanded ? '' : 'line-clamp-1'}`}
+                className="font-medium text-gray-900 text-left hover:text-emerald-600 transition-colors py-1 text-sm"
                 title="Click to edit · Double-click to open"
               >
                 {nameVal}
@@ -364,38 +356,16 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             {people.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
 
-          {/* Notes — click to open modal, hidden when row is expanded */}
-          {!expanded && (
-            <button
-              onClick={() => setNotesModalOpen(true)}
-              className="text-xs text-gray-500 truncate block w-full text-left hover:text-gray-800 transition-colors"
-              title={notesVal || 'Click to add a note'}
-            >
-              {notesVal || <span className="text-gray-300">—</span>}
-            </button>
-          )}
-          {expanded && <span />}
+          {/* Notes — click to open modal */}
+          <button
+            onClick={() => setNotesModalOpen(true)}
+            className="text-xs text-gray-500 truncate block w-full text-left hover:text-gray-800 transition-colors"
+            title={notesVal || 'Click to add a note'}
+          >
+            {notesVal || <span className="text-gray-300">—</span>}
+          </button>
         </div>
 
-        {/* Expanded notes panel */}
-        {expanded && (
-          <div className="hidden sm:block px-4 pb-3 pt-1 bg-gray-50/60">
-            <textarea
-              value={notesVal}
-              onChange={e => setNotesVal(e.target.value)}
-              onBlur={() => {
-                if (notesVal !== (task.notes ?? '')) {
-                  const old = task.notes ?? ''
-                  save('notes', notesVal)
-                  showUndo('Note saved', () => { setNotesVal(old); save('notes', old) })
-                }
-              }}
-              placeholder="Add notes…"
-              rows={3}
-              className="w-full text-sm text-gray-600 resize-none border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-            />
-          </div>
-        )}
       </div>
 
       {notesModalOpen && (
