@@ -64,7 +64,7 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
 
   return (
     <div
-      className="hidden sm:grid items-center gap-3 pr-4 py-1.5 text-sm bg-gray-50/70 border-l-[3px] border-emerald-200"
+      className="group/sub hidden sm:grid items-center gap-3 pr-4 py-1.5 text-sm bg-gray-50/70 border-l-[3px] border-emerald-200"
       style={{ gridTemplateColumns: gridCols(showCompany, showReminder) }}
     >
       <div className="flex items-center gap-2 min-w-0 pl-6">
@@ -93,12 +93,15 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
             value={nameVal}
             onChange={e => setNameVal(e.target.value)}
             onBlur={() => {
+              if (!nameVal.trim()) { onDelete(); return }
               setEditingName(false)
-              if (nameVal.trim() && nameVal !== task.name) save('name', nameVal.trim())
-              else setNameVal(task.name)
+              if (nameVal !== task.name) save('name', nameVal.trim())
             }}
             onKeyDown={e => {
-              if (e.key === 'Enter') e.currentTarget.blur()
+              if (e.key === 'Enter') {
+                if (!nameVal.trim()) { onDelete(); return }
+                e.currentTarget.blur()
+              }
               if (e.key === 'Escape') { setNameVal(task.name); setEditingName(false) }
             }}
             className="text-sm text-gray-700 w-full border-b border-emerald-400 focus:outline-none bg-transparent"
@@ -143,7 +146,7 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
       {showReminder && <span />}
       <span />
 
-      <button onClick={onDelete} className="text-gray-300 hover:text-red-400 transition-colors">
+      <button onClick={onDelete} className="text-transparent group-hover/sub:text-gray-300 hover:!text-red-400 transition-colors" title="Delete subtask">
         <Trash2 size={13} />
       </button>
     </div>
