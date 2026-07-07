@@ -32,9 +32,9 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
     const matchSearch =
       !q ||
       t.name.toLowerCase().includes(q) ||
-      t.responsible?.toLowerCase().includes(q) ||
-      t.notes?.toLowerCase().includes(q) ||
-      t.waiting_on?.toLowerCase().includes(q)
+      (t.responsible?.toLowerCase().includes(q) ?? false) ||
+      (t.notes?.toLowerCase().includes(q) ?? false) ||
+      (t.waiting_on?.toLowerCase().includes(q) ?? false)
     const matchResponsible =
       !filters.responsible ||
       t.responsible === filters.responsible ||
