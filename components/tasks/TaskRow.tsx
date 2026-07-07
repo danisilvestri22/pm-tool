@@ -286,6 +286,14 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
     vals.status === 'not_started' ? 'text-gray-500' :
     'text-blue-700'
 
+  const statusBg =
+    vals.status === 'done' ? 'bg-green-50' :
+    vals.status === 'at_risk' ? 'bg-red-50' :
+    vals.status === 'blocked' ? 'bg-orange-50' :
+    vals.status === 'waiting_on_response' ? 'bg-yellow-50' :
+    vals.status === 'not_started' ? 'bg-gray-100' :
+    'bg-blue-50'
+
   return (
     <>
       <div>
@@ -332,7 +340,7 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
 
           {/* Desktop */}
           <div
-            className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm cursor-pointer"
+            className="hidden sm:grid items-center gap-3 px-4 py-1.5 text-sm cursor-pointer"
             style={{ gridTemplateColumns: gridCols(!!showCompany, showReminder) }}
             onClick={e => {
               if ((e.target as HTMLElement).closest('button, select, input, a')) return
@@ -445,7 +453,7 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
                 save('status', v)
                 showUndo('Status updated', () => { setVals(s => ({ ...s, status: old })); save('status', old) })
               }}
-              className={`${selectClass} font-medium ${statusColor}`}>
+              className={`text-xs border border-transparent rounded-full px-2 py-0.5 font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-400 hover:opacity-80 transition-opacity ${statusColor} ${statusBg}`}>
               <option value="not_started">Not Started</option>
               <option value="in_progress">In Progress</option>
               <option value="waiting_on_response">Waiting on Response</option>

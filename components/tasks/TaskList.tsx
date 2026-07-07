@@ -9,12 +9,12 @@ import type { Task } from '@/types/database'
 const priorityOrder = { high: 0, medium: 1, low: 2 }
 const statusOrder: Record<string, number> = { at_risk: 0, blocked: 1, waiting_on_response: 2, in_progress: 3, not_started: 4, done: 5 }
 
-const STATUS_GROUPS: { key: string; label: string; color: string }[] = [
-  { key: 'at_risk',              label: 'At Risk',               color: 'text-red-500' },
-  { key: 'blocked',              label: 'Blocked',               color: 'text-red-700' },
-  { key: 'waiting_on_response',  label: 'Waiting on Response',   color: 'text-amber-500' },
-  { key: 'in_progress',          label: 'In Progress',           color: 'text-blue-500' },
-  { key: 'not_started',          label: 'Not Started',           color: 'text-gray-500' },
+const STATUS_GROUPS: { key: string; label: string; dot: string; bg: string; border: string }[] = [
+  { key: 'at_risk',             label: 'At Risk',              dot: 'bg-red-400',    bg: 'bg-red-50',    border: 'border-l-red-400' },
+  { key: 'blocked',             label: 'Blocked',              dot: 'bg-red-700',    bg: 'bg-red-50',    border: 'border-l-red-700' },
+  { key: 'waiting_on_response', label: 'Waiting on Response',  dot: 'bg-amber-400',  bg: 'bg-amber-50',  border: 'border-l-amber-400' },
+  { key: 'in_progress',         label: 'In Progress',          dot: 'bg-blue-400',   bg: 'bg-blue-50',   border: 'border-l-blue-400' },
+  { key: 'not_started',         label: 'Not Started',          dot: 'bg-gray-300',   bg: 'bg-gray-50',   border: 'border-l-gray-300' },
 ]
 
 interface Props {
@@ -128,18 +128,19 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
                 <div key={group.key} className="border-t">
                   <button
                     onClick={() => toggleSection(group.key)}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors"
+                    className={`flex items-center gap-2 w-full px-4 py-2 text-left border-l-4 ${group.border} ${group.bg} hover:brightness-95 transition-all`}
                   >
                     {isOpen
                       ? <ChevronDown size={13} className="text-gray-400 shrink-0" />
                       : <ChevronRight size={13} className="text-gray-400 shrink-0" />}
-                    <span className={`text-xs font-semibold uppercase tracking-wide ${group.color}`}>
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${group.dot}`} />
+                    <span className="text-xs font-semibold text-gray-700 tracking-wide">
                       {group.label}
                     </span>
-                    <span className="text-xs text-gray-400">{groupTasks.length}</span>
+                    <span className="text-xs text-gray-400 font-normal">{groupTasks.length}</span>
                   </button>
                   {isOpen && (
-                    <div className="divide-y divide-gray-50">
+                    <div className="divide-y divide-gray-50 pb-2">
                       {groupTasks.map(task => (
                         <TaskRow
                           key={task.id}
