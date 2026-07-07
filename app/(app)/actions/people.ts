@@ -17,7 +17,7 @@ export async function addPerson(name: string): Promise<{ error?: string }> {
   if (existing) return { error: 'That name already exists' }
 
   const { error } = await supabase.from('people').insert({ name: trimmed })
-  if (error) return { error: 'Failed to add person' }
+  if (error) return { error: error.message }
 
   revalidatePath('/', 'layout')
   return {}
