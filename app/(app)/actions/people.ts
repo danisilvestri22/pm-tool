@@ -1,10 +1,15 @@
 'use server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function addPerson(name: string): Promise<{ error?: string }> {
   const trimmed = name.trim()
   if (!trimmed) return { error: 'Name is required' }
+
+  const userClient = await createClient()
+  const { data: { user } } = await userClient.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
 
   const supabase = createAdminClient()
 
@@ -16,8 +21,8 @@ export async function addPerson(name: string): Promise<{ error?: string }> {
 
   if (existing) return { error: 'That name already exists' }
 
-  const { error } = await supabase.from('people').insert({ name: trimmed })
-  if (error) return { error: error.message }
+  const { error } = await supabase.from('people').insert({ name: trimmed, user_id: user.id })
+  if (error) return { error: 'Failed to add person' }
 
   revalidatePath('/', 'layout')
   return {}
