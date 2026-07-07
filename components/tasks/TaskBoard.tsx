@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -58,6 +58,8 @@ export default function TaskBoard({ tasks: propTasks }: { tasks: Task[] }) {
 
   useEffect(() => { setLocalTasks(propTasks) }, [propTasks])
 
+  const isPending = useRef(false)
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   )
@@ -71,22 +73,27 @@ export default function TaskBoard({ tasks: propTasks }: { tasks: Task[] }) {
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
-    if (!over) return
+    if (!over || isPending.current) return
 
     const taskId = active.id as string
-    const newStatus = over.id as Status
+    const newStatus = over.id as string
+    if (!COLUMNS.some(c => c.key === newStatus)) return
+
     const task = localTasks.find(t => t.id === taskId)
-    if (!task || task.status === newStatus) return
+    if (!task || task.status === (newStatus as Status)) return
 
     const oldStatus = task.status
+    isPending.current = true
 
     setLocalTasks(prev =>
-      prev.map(t => (t.id === taskId ? { ...t, status: newStatus } : t))
+      prev.map(t => (t.id === taskId ? { ...t, status: newStatus as Status } : t))
     )
 
     const fd = new FormData()
     fd.set('status', newStatus)
     const result = await updateTask(taskId, fd)
+
+    isPending.current = false
 
     if (result?.error) {
       setLocalTasks(prev =>
