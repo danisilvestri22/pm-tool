@@ -26,7 +26,7 @@ export async function snoozeReminder(id: string, until: string) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('reminders')
-    .update({ snoozed_until: until })
+    .update({ snoozed_until: until, due_date: until.slice(0, 10) })
     .eq('id', id)
   if (error) return { error: 'Failed to snooze' }
   revalidatePath('/reminders')
