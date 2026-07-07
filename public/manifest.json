@@ -1,0 +1,17 @@
+{
+  "name": "Project Tracker",
+  "short_name": "Projects",
+  "description": "Project management tool",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

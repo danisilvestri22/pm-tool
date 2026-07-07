@@ -13,8 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { template: "%s | PM Tool", default: "PM Tool" },
-  description: "Project management tool for Dani and Mike",
+  title: { template: "%s | Project Tracker", default: "Project Tracker" },
+  description: "Project management tool",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Project Tracker",
+  },
 };
 
 export default function RootLayout({
