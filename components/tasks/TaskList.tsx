@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import TaskRow from './TaskRow'
 import TaskPanel from './TaskPanel'
 import FilterBar, { type Filters, defaultFilters } from './FilterBar'
@@ -21,27 +22,33 @@ interface Props {
 export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '', showReminder = false, pinnedTaskIds = [] }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
+  const [completedOpen, setCompletedOpen] = useState(false)
 
   const subtasksFor = (id: string) => tasks.filter(t => t.parent_task_id === id)
   const topLevel = tasks.filter(t => !t.parent_task_id)
 
+  function matchesBase(t: Task): boolean {
+    const q = search.toLowerCase()
+    const matchSearch =
+      !q ||
+      t.name.toLowerCase().includes(q) ||
+      t.responsible?.toLowerCase().includes(q) ||
+      t.notes?.toLowerCase().includes(q) ||
+      t.waiting_on?.toLowerCase().includes(q)
+    const matchResponsible =
+      !filters.responsible ||
+      t.responsible === filters.responsible ||
+      t.waiting_on === filters.responsible
+    const matchCompany = !filters.company || t.company_id === filters.company
+    return matchSearch && matchResponsible && matchCompany
+  }
+
   const filtered = topLevel
     .filter(t => {
-      const q = search.toLowerCase()
-      const matchSearch =
-        !q ||
-        t.name.toLowerCase().includes(q) ||
-        t.responsible?.toLowerCase().includes(q) ||
-        t.notes?.toLowerCase().includes(q) ||
-        t.waiting_on?.toLowerCase().includes(q)
+      if (t.status === 'done') return false
       const matchStatus = filters.statuses.length === 0 || filters.statuses.includes(t.status)
       const matchPriority = !filters.priority || t.priority === filters.priority
-      const matchResponsible =
-        !filters.responsible ||
-        t.responsible?.toLowerCase().includes(filters.responsible.toLowerCase()) ||
-        t.waiting_on?.toLowerCase().includes(filters.responsible.toLowerCase())
-      const matchCompany = !filters.company || t.company_id === filters.company
-      return matchSearch && matchStatus && matchPriority && matchResponsible && matchCompany
+      return matchesBase(t) && matchStatus && matchPriority
     })
     .sort((a, b) => {
       if (filters.sortBy === 'due_date') {
@@ -56,15 +63,27 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
       return b.created_at.localeCompare(a.created_at)
     })
 
+  const completed = topLevel
+    .filter(t => t.status === 'done' && matchesBase(t))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+
   const columns = showCompany
     ? ['Task', 'Company', 'Responsible', 'Priority', 'Status', 'Due date', ...(showReminder ? ['Reminder'] : []), 'Waiting on', 'Notes']
     : ['Task', 'Responsible', 'Priority', 'Status', 'Due date', ...(showReminder ? ['Reminder'] : []), 'Waiting on', 'Notes']
 
+  const gridTemplate = showCompany
+    ? (showReminder ? 'minmax(300px,4fr) 120px 120px 55px 100px 100px 100px 100px 140px' : 'minmax(300px,4fr) 120px 120px 55px 100px 100px 100px 140px')
+    : (showReminder ? 'minmax(300px,4fr) 120px 55px 100px 100px 100px 100px 140px' : 'minmax(300px,4fr) 120px 55px 100px 100px 100px 140px')
+
+  const hasActive = filtered.length > 0
+  const hasCompleted = completed.length > 0
+  const hasAny = hasActive || hasCompleted
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <FilterBar filters={filters} onChange={setFilters} companies={showCompany ? companies : undefined} />
+      <FilterBar filters={filters} onChange={setFilters} companies={showCompany ? companies : undefined} people={people} />
 
-      {filtered.length === 0 ? (
+      {!hasAny ? (
         <div className="text-center py-16 text-gray-400">
           {topLevel.length === 0 ? (
             <>
@@ -78,18 +97,17 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
       ) : (
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-auto">
+            {/* Column headers */}
             <div
               className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
-              style={{
-                gridTemplateColumns: showCompany
-                  ? (showReminder ? 'minmax(300px,4fr) 120px 120px 55px 100px 100px 100px 100px 140px' : 'minmax(300px,4fr) 120px 120px 55px 100px 100px 100px 140px')
-                  : (showReminder ? 'minmax(300px,4fr) 120px 55px 100px 100px 100px 100px 140px' : 'minmax(300px,4fr) 120px 55px 100px 100px 100px 140px'),
-              }}
+              style={{ gridTemplateColumns: gridTemplate }}
             >
               {columns.map(col => (
                 <span key={col}>{col}</span>
               ))}
             </div>
+
+            {/* Active tasks */}
             <div className="divide-y divide-gray-50">
               {filtered.map(task => (
                 <TaskRow
@@ -105,6 +123,41 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
                 />
               ))}
             </div>
+
+            {/* Completed section */}
+            {hasCompleted && (
+              <div className="mt-2 border-t">
+                <button
+                  onClick={() => setCompletedOpen(o => !o)}
+                  className="flex items-center gap-2 w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
+                >
+                  {completedOpen
+                    ? <ChevronDown size={13} className="text-gray-400 shrink-0" />
+                    : <ChevronRight size={13} className="text-gray-400 shrink-0" />}
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    Completed
+                  </span>
+                  <span className="text-xs text-gray-400">{completed.length}</span>
+                </button>
+                {completedOpen && (
+                  <div className="divide-y divide-gray-50 opacity-70">
+                    {completed.map(task => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        showCompany={showCompany}
+                        companyName={companies[task.company_id]}
+                        subtasks={subtasksFor(task.id)}
+                        people={people}
+                        showReminder={showReminder}
+                        pinnedTaskIds={pinnedTaskIds}
+                        onSelect={setSelectedTask}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <TaskPanel

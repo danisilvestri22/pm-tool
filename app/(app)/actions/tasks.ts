@@ -118,6 +118,56 @@ export async function restoreTask(id: string) {
   return { success: true }
 }
 
+export interface TaskComment {
+  id: string
+  task_id: string
+  author_name: string
+  body: string
+  created_at: string
+}
+
+export async function getComments(taskId: string): Promise<TaskComment[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('task_comments')
+    .select('id, task_id, author_name, body, created_at')
+    .eq('task_id', taskId)
+    .order('created_at', { ascending: true })
+  return (data ?? []) as TaskComment[]
+}
+
+export async function addComment(taskId: string, body: string): Promise<TaskComment | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data, error } = await supabase
+    .from('task_comments')
+    .insert({
+      task_id: taskId,
+      user_id: user.id,
+      author_name: user.email?.split('@')[0] ?? 'Unknown',
+      body,
+    })
+    .select()
+    .single()
+  if (error) return null
+  return data as TaskComment
+}
+
+export async function updateComment(id: string, body: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('task_comments').update({ body }).eq('id', id)
+  if (error) return { error: 'Failed to update comment' }
+  return { success: true }
+}
+
+export async function deleteComment(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('task_comments').delete().eq('id', id)
+  if (error) return { error: 'Failed to delete comment' }
+  return { success: true }
+}
+
 export async function getKnownNames(): Promise<string[]> {
   const supabase = await createClient()
   const { data } = await supabase

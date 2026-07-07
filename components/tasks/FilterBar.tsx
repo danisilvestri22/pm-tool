@@ -31,6 +31,7 @@ interface Props {
   filters: Filters
   onChange: (f: Filters) => void
   companies?: Record<string, string>
+  people?: string[]
 }
 
 function StatusMultiSelect({ statuses, onChange }: { statuses: Status[]; onChange: (s: Status[]) => void }) {
@@ -110,7 +111,7 @@ function StatusMultiSelect({ statuses, onChange }: { statuses: Status[]; onChang
   )
 }
 
-export default function FilterBar({ filters, onChange, companies }: Props) {
+export default function FilterBar({ filters, onChange, companies, people }: Props) {
   const set =
     (key: keyof Filters) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
@@ -136,12 +137,19 @@ export default function FilterBar({ filters, onChange, companies }: Props) {
         <option value="medium">P2 — Medium</option>
         <option value="low">P3 — Low</option>
       </select>
-      <input
-        value={filters.responsible}
-        onChange={set('responsible')}
-        placeholder="Filter by person…"
-        className={`${inputClass} w-36`}
-      />
+      {people && people.length > 0 ? (
+        <select value={filters.responsible} onChange={set('responsible')} className={inputClass}>
+          <option value="">All people</option>
+          {people.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      ) : (
+        <input
+          value={filters.responsible}
+          onChange={set('responsible')}
+          placeholder="Filter by person…"
+          className={`${inputClass} w-36`}
+        />
+      )}
       <select value={filters.sortBy} onChange={set('sortBy')} className={inputClass}>
         <option value="due_date">Sort: Due date</option>
         <option value="priority">Sort: Priority</option>

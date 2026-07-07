@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import { X, Pencil } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Pencil, Trash2, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import TaskPanelField from './TaskPanelField'
 import TaskForm from './TaskForm'
@@ -8,7 +8,7 @@ import StatusBadge from './StatusBadge'
 import PriorityBadge from './PriorityBadge'
 import SubtaskList from './SubtaskList'
 import Toast from '@/components/ui/Toast'
-import { updateTask, softDeleteTask, restoreTask } from '@/app/(app)/actions/tasks'
+import { updateTask, softDeleteTask, restoreTask, getComments, addComment, updateComment, deleteComment, type TaskComment } from '@/app/(app)/actions/tasks'
 import type { Task } from '@/types/database'
 
 interface Props {
@@ -16,6 +16,113 @@ interface Props {
   subtasks?: Task[]
   people?: string[]
   onClose: () => void
+}
+
+function CommentsSection({ taskId }: { taskId: string }) {
+  const [comments, setComments] = useState<TaskComment[]>([])
+  const [commentText, setCommentText] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+
+  useEffect(() => {
+    setComments([])
+    getComments(taskId).then(setComments)
+  }, [taskId])
+
+  async function handleAdd() {
+    if (!commentText.trim() || submitting) return
+    setSubmitting(true)
+    const c = await addComment(taskId, commentText.trim())
+    if (c) { setComments(prev => [...prev, c]); setCommentText('') }
+    setSubmitting(false)
+  }
+
+  async function handleUpdate(id: string) {
+    if (!editText.trim()) return
+    await updateComment(id, editText.trim())
+    setComments(prev => prev.map(c => c.id === id ? { ...c, body: editText.trim() } : c))
+    setEditingId(null)
+  }
+
+  async function handleDelete(id: string) {
+    await deleteComment(id)
+    setComments(prev => prev.filter(c => c.id !== id))
+  }
+
+  return (
+    <div className="space-y-3 mt-1">
+      {comments.map(c => (
+        <div key={c.id} className="group text-xs">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-gray-400">
+              {c.author_name} · {format(new Date(c.created_at), 'MMM d, h:mm a')}
+            </span>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => { setEditingId(c.id); setEditText(c.body) }}
+                className="text-gray-300 hover:text-gray-500"
+                title="Edit"
+              >
+                <Pencil size={10} />
+              </button>
+              <button
+                onClick={() => handleDelete(c.id)}
+                className="text-gray-300 hover:text-red-400"
+                title="Delete"
+              >
+                <Trash2 size={10} />
+              </button>
+            </div>
+          </div>
+          {editingId === c.id ? (
+            <div className="mt-1 flex gap-1">
+              <textarea
+                autoFocus
+                value={editText}
+                onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUpdate(c.id) }
+                  if (e.key === 'Escape') setEditingId(null)
+                }}
+                rows={2}
+                className="flex-1 text-xs border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none"
+              />
+              <button
+                onClick={() => handleUpdate(c.id)}
+                className="self-end text-emerald-600 hover:text-emerald-700"
+                title="Save"
+              >
+                <Check size={13} />
+              </button>
+            </div>
+          ) : (
+            <p className="mt-0.5 text-gray-700 whitespace-pre-wrap">{c.body}</p>
+          )}
+        </div>
+      ))}
+
+      <div className="flex gap-2 pt-1">
+        <textarea
+          value={commentText}
+          onChange={e => setCommentText(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAdd() }
+          }}
+          placeholder="Add a comment… (Enter to save, Shift+Enter for new line)"
+          rows={2}
+          className="flex-1 text-xs border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={submitting || !commentText.trim()}
+          className="self-end text-xs bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-emerald-700 disabled:opacity-40 whitespace-nowrap"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default function TaskPanel({ task, subtasks = [], people = [], onClose }: Props) {
@@ -160,6 +267,10 @@ export default function TaskPanel({ task, subtasks = [], people = [], onClose }:
 
           <TaskPanelField label={`Subtasks${subtasks.length > 0 ? ` (${subtasks.length})` : ''}`}>
             <SubtaskList parentTask={task} subtasks={subtasks} />
+          </TaskPanelField>
+
+          <TaskPanelField label="Comments">
+            <CommentsSection taskId={task.id} />
           </TaskPanelField>
         </dl>
 

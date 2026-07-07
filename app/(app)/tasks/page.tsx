@@ -10,7 +10,7 @@ export default async function TasksPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const [{ data: tasks }, { data: companies }, { data: people }, { data: pins }] = await Promise.all([
-    supabase.from('tasks').select('*').is('deleted_at', null).neq('status', 'done').order('due_date', { ascending: true, nullsFirst: false }),
+    supabase.from('tasks').select('*').is('deleted_at', null).order('due_date', { ascending: true, nullsFirst: false }),
     supabase.from('companies').select('id, name'),
     supabase.from('people').select('name').order('name'),
     supabase.from('user_pinned_tasks').select('task_id').eq('user_id', user!.id),
