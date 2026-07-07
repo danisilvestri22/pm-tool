@@ -1,8 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { format, addHours, addDays } from 'date-fns'
-import { Bell, Check, Clock, Trash2, Plus, ChevronDown, Pencil } from 'lucide-react'
-import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder } from '@/app/(app)/actions/reminders'
+import { Bell, Check, Clock, Trash2, Plus, ChevronDown, ChevronRight, Pencil, Pin } from 'lucide-react'
+import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask } from '@/app/(app)/actions/reminders'
+import StatusBadge from '@/components/tasks/StatusBadge'
+import type { Task } from '@/types/database'
 
 interface Reminder {
   id: string
@@ -18,18 +20,46 @@ interface Props {
   active: Reminder[]
   snoozed: Reminder[]
   completed: Reminder[]
+  pinnedTasks: Task[]
+  companies: Record<string, string>
+  people: string[]
+}
+
+type ListItem =
+  | { kind: 'reminder'; data: Reminder }
+  | { kind: 'task'; data: Task; pinned: boolean }
+
+type GroupKey = 'overdue' | 'today' | 'next' | 'scheduled' | 'unscheduled'
+
+const GROUPS: { key: GroupKey; label: string; defaultOpen: boolean }[] = [
+  { key: 'overdue',     label: 'Overdue',       defaultOpen: true  },
+  { key: 'today',       label: 'Today',          defaultOpen: true  },
+  { key: 'next',        label: 'Next · 7 days',  defaultOpen: true  },
+  { key: 'scheduled',   label: 'Scheduled',      defaultOpen: false },
+  { key: 'unscheduled', label: 'Unscheduled',    defaultOpen: false },
+]
+
+function getGroup(dueDate: string | null): GroupKey {
+  if (!dueDate) return 'unscheduled'
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate)
+  due.setHours(0, 0, 0, 0)
+  const diffDays = Math.round((due.getTime() - today.getTime()) / 86400000)
+  if (diffDays < 0) return 'overdue'
+  if (diffDays === 0) return 'today'
+  if (diffDays <= 7) return 'next'
+  return 'scheduled'
 }
 
 function SnoozeMenu({ id }: { id: string }) {
   const [open, setOpen] = useState(false)
-
   const options = [
-    { label: '1 hour', until: addHours(new Date(), 1).toISOString() },
+    { label: '1 hour',  until: addHours(new Date(), 1).toISOString() },
     { label: 'Tomorrow', until: addDays(new Date(), 1).toISOString() },
-    { label: '3 days', until: addDays(new Date(), 3).toISOString() },
-    { label: '1 week', until: addDays(new Date(), 7).toISOString() },
+    { label: '3 days',  until: addDays(new Date(), 3).toISOString() },
+    { label: '1 week',  until: addDays(new Date(), 7).toISOString() },
   ]
-
   return (
     <div className="relative">
       <button
@@ -45,10 +75,7 @@ function SnoozeMenu({ id }: { id: string }) {
           {options.map(o => (
             <button
               key={o.label}
-              onClick={async () => {
-                setOpen(false)
-                await snoozeReminder(id, o.until)
-              }}
+              onClick={async () => { setOpen(false); await snoozeReminder(id, o.until) }}
               className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
             >
               {o.label}
@@ -77,40 +104,18 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   if (editing) {
     return (
       <form onSubmit={handleSave} className={`px-4 py-3 border-b last:border-0 space-y-2 ${dim ? 'opacity-50' : ''}`}>
-        <input
-          name="title"
-          defaultValue={r.title}
-          required
-          autoFocus
-          placeholder="Reminder title"
-          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
-        <textarea
-          name="details"
-          defaultValue={r.details ?? ''}
-          rows={2}
-          placeholder="Details (optional)"
-          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-        />
-        <input
-          type="date"
-          name="due_date"
-          defaultValue={r.due_date ?? ''}
-          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
+        <input name="title" defaultValue={r.title} required autoFocus placeholder="Reminder title"
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        <textarea name="details" defaultValue={r.details ?? ''} rows={2} placeholder="Details (optional)"
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
+        <input type="date" name="due_date" defaultValue={r.due_date ?? ''}
+          className="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving}
+            className="bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-emerald-700 disabled:opacity-50">
             {saving ? 'Saving…' : 'Save'}
           </button>
-          <button
-            type="button"
-            onClick={() => setEditing(false)}
-            className="text-xs text-gray-500 hover:text-gray-700 px-2"
-          >
+          <button type="button" onClick={() => setEditing(false)} className="text-xs text-gray-500 hover:text-gray-700 px-2">
             Cancel
           </button>
         </div>
@@ -121,51 +126,30 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   return (
     <div className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 ${dim ? 'opacity-50' : ''}`}>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${r.completed_at ? 'line-through text-gray-400' : 'text-gray-900'}`}>
-          {r.title}
-        </p>
-        {r.details && (
-          <p className="text-xs text-gray-500 mt-0.5 whitespace-pre-wrap">{r.details}</p>
-        )}
+        <p className={`text-sm font-medium ${r.completed_at ? 'line-through text-gray-400' : 'text-gray-900'}`}>{r.title}</p>
+        {r.details && <p className="text-xs text-gray-500 mt-0.5 whitespace-pre-wrap">{r.details}</p>}
         {r.due_date && (
           <p className={`text-xs mt-1 ${isOverdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-            Due {format(new Date(r.due_date), 'MMM d, yyyy')}
-            {isOverdue ? ' — overdue' : ''}
+            Due {format(new Date(r.due_date), 'MMM d, yyyy')}{isOverdue ? ' — overdue' : ''}
           </p>
         )}
       </div>
       {!r.completed_at && (
         <div className="flex items-center gap-3 shrink-0 mt-0.5">
-          <button
-            onClick={() => setEditing(true)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Edit"
-          >
+          <button onClick={() => setEditing(true)} className="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Edit">
             <Pencil size={13} />
           </button>
           <SnoozeMenu id={r.id} />
-          <button
-            onClick={() => completeReminder(r.id)}
-            className="text-gray-400 hover:text-green-500 transition-colors"
-            aria-label="Mark done"
-          >
+          <button onClick={() => completeReminder(r.id)} className="text-gray-400 hover:text-green-500 transition-colors" aria-label="Mark done">
             <Check size={14} />
           </button>
-          <button
-            onClick={() => deleteReminder(r.id)}
-            className="text-gray-400 hover:text-red-500 transition-colors"
-            aria-label="Delete"
-          >
+          <button onClick={() => deleteReminder(r.id)} className="text-gray-400 hover:text-red-500 transition-colors" aria-label="Delete">
             <Trash2 size={13} />
           </button>
         </div>
       )}
       {r.completed_at && (
-        <button
-          onClick={() => deleteReminder(r.id)}
-          className="text-gray-400 hover:text-red-500 transition-colors shrink-0 mt-0.5"
-          aria-label="Delete"
-        >
+        <button onClick={() => deleteReminder(r.id)} className="text-gray-400 hover:text-red-500 transition-colors shrink-0 mt-0.5" aria-label="Delete">
           <Trash2 size={13} />
         </button>
       )}
@@ -173,10 +157,153 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   )
 }
 
-export default function RemindersView({ active, snoozed, completed }: Props) {
+function TaskItem({ task, pinned, companies }: { task: Task; pinned: boolean; companies: Record<string, string> }) {
+  const [localPinned, setLocalPinned] = useState(pinned)
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date()
+
+  async function handleUnpin() {
+    setLocalPinned(false)
+    const result = await unpinTask(task.id)
+    if (result?.error) setLocalPinned(true)
+  }
+
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 border-b last:border-0">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900">{task.name}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {companies[task.company_id] && (
+            <span className="text-xs text-gray-400">{companies[task.company_id]}</span>
+          )}
+          {task.due_date && (
+            <span className={`text-xs ${isOverdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+              Due {format(new Date(task.due_date), 'MMM d, yyyy')}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0 mt-0.5">
+        <StatusBadge status={task.status} />
+        {localPinned && (
+          <button
+            onClick={handleUnpin}
+            className="text-emerald-500 hover:text-gray-400 transition-colors"
+            title="Unpin from Reminders"
+          >
+            <Pin size={13} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function GroupSection({
+  groupKey,
+  label,
+  items,
+  companies,
+  defaultOpen,
+}: {
+  groupKey: GroupKey
+  label: string
+  items: ListItem[]
+  companies: Record<string, string>
+  defaultOpen: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  if (items.length === 0) return null
+
+  const borderColor = groupKey === 'overdue' ? 'border-red-200' : 'border-gray-200'
+
+  return (
+    <div className="mb-3">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 w-full px-1 py-1.5 text-left"
+      >
+        {open ? <ChevronDown size={12} className="text-gray-400" /> : <ChevronRight size={12} className="text-gray-400" />}
+        <span className={`text-xs font-semibold uppercase tracking-wide ${groupKey === 'overdue' ? 'text-red-500' : groupKey === 'today' ? 'text-amber-600' : 'text-gray-500'}`}>
+          {label}
+        </span>
+        <span className="text-xs text-gray-400">{items.length}</span>
+      </button>
+      {open && (
+        <div className={`bg-white border ${borderColor} rounded-xl overflow-hidden`}>
+          {items.map((item) =>
+            item.kind === 'reminder'
+              ? <ReminderRow key={`r-${item.data.id}`} r={item.data} />
+              : <TaskItem key={`t-${item.data.id}`} task={item.data} pinned={item.pinned} companies={companies} />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function RemindersView({ active, snoozed, completed, pinnedTasks, companies, people }: Props) {
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [showTasks, setShowTasks] = useState(false)
+  const [myName, setMyName] = useState('')
+  const [myTasks, setMyTasks] = useState<Task[]>([])
+  const [loadingTasks, setLoadingTasks] = useState(false)
+
+  useEffect(() => {
+    setShowTasks(localStorage.getItem('reminders_show_tasks') === 'true')
+    setMyName(localStorage.getItem('reminders_my_name') ?? '')
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('reminders_show_tasks', showTasks ? 'true' : 'false')
+    if (!showTasks) { setMyTasks([]); return }
+    if (myName) fetchMyTasks()
+  }, [showTasks])
+
+  useEffect(() => {
+    localStorage.setItem('reminders_my_name', myName)
+    if (showTasks && myName) fetchMyTasks()
+    else if (!myName) setMyTasks([])
+  }, [myName])
+
+  async function fetchMyTasks() {
+    if (!myName) return
+    setLoadingTasks(true)
+    const tasks = await getMyTasks(myName)
+    setMyTasks(tasks)
+    setLoadingTasks(false)
+  }
+
+  const allItems = useMemo<ListItem[]>(() => {
+    const items: ListItem[] = active.map(r => ({ kind: 'reminder', data: r }))
+    const seen = new Set<string>()
+    for (const task of pinnedTasks) {
+      seen.add(task.id)
+      items.push({ kind: 'task', data: task, pinned: true })
+    }
+    if (showTasks) {
+      for (const task of myTasks) {
+        if (!seen.has(task.id)) {
+          seen.add(task.id)
+          items.push({ kind: 'task', data: task, pinned: false })
+        }
+      }
+    }
+    return items
+  }, [active, pinnedTasks, myTasks, showTasks])
+
+  function itemsForGroup(key: GroupKey): ListItem[] {
+    return allItems
+      .filter(item => getGroup(item.data.due_date) === key)
+      .sort((a, b) => {
+        const da = a.data.due_date
+        const db = b.data.due_date
+        if (!da) return 1
+        if (!db) return -1
+        return da.localeCompare(db)
+      })
+  }
 
   const inputClass = 'w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500'
 
@@ -185,28 +312,52 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
     setLoading(true)
     const fd = new FormData(e.currentTarget)
     const result = await createReminder(fd)
-    if (result?.success) {
-      setAdding(false)
-      ;(e.target as HTMLFormElement).reset()
-    }
+    if (result?.success) { setAdding(false); (e.target as HTMLFormElement).reset() }
     setLoading(false)
   }
 
   return (
     <div className="p-6 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Bell size={18} className="text-emerald-500" />
           <h1 className="text-xl font-semibold text-gray-900">Reminders</h1>
         </div>
-        <button
-          onClick={() => setAdding(a => !a)}
-          className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 transition-colors"
-        >
-          <Plus size={14} />
-          Add reminder
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTasks(t => !t)}
+            className={`flex items-center gap-1.5 text-xs border rounded-lg px-3 py-1.5 transition-colors ${
+              showTasks
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : 'border-gray-200 text-gray-500 hover:border-gray-300'
+            }`}
+          >
+            Show my project tasks
+          </button>
+          <button
+            onClick={() => setAdding(a => !a)}
+            className="flex items-center gap-1.5 bg-emerald-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-emerald-700 transition-colors"
+          >
+            <Plus size={14} />
+            Add reminder
+          </button>
+        </div>
       </div>
+
+      {showTasks && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500">Assigned to:</span>
+          <select
+            value={myName}
+            onChange={e => setMyName(e.target.value)}
+            className="border rounded-lg px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+          >
+            <option value="">— pick a name —</option>
+            {people.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          {loadingTasks && <span className="text-xs text-gray-400">Loading…</span>}
+        </div>
+      )}
 
       {adding && (
         <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-4 mb-4 space-y-3">
@@ -223,11 +374,8 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
             <input type="date" name="due_date" className={inputClass} />
           </div>
           <div className="flex gap-2 pt-1">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-emerald-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading}
+              className="bg-emerald-600 text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">
               {loading ? 'Saving…' : 'Save'}
             </button>
             <button type="button" onClick={() => setAdding(false)} className="text-sm text-gray-500 hover:text-gray-700 px-2">
@@ -237,23 +385,28 @@ export default function RemindersView({ active, snoozed, completed }: Props) {
         </form>
       )}
 
-      {active.length === 0 && snoozed.length === 0 ? (
+      {allItems.length === 0 && snoozed.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <Bell size={32} className="mx-auto mb-2 opacity-30" />
           <p className="text-sm">No active reminders.</p>
         </div>
       ) : (
         <>
-          {active.length > 0 && (
-            <div className="bg-white border rounded-xl mb-4">
-              {active.map(r => <ReminderRow key={r.id} r={r} />)}
-            </div>
-          )}
+          {GROUPS.map(g => (
+            <GroupSection
+              key={g.key}
+              groupKey={g.key}
+              label={g.label}
+              items={itemsForGroup(g.key)}
+              companies={companies}
+              defaultOpen={g.defaultOpen}
+            />
+          ))}
 
           {snoozed.length > 0 && (
-            <div className="mb-4">
+            <div className="mb-3">
               <p className="text-xs text-gray-400 uppercase tracking-wide px-1 mb-2">Snoozed</p>
-              <div className="bg-white border rounded-xl">
+              <div className="bg-white border border-gray-200 rounded-xl">
                 {snoozed.map(r => <ReminderRow key={r.id} r={r} dim />)}
               </div>
             </div>
