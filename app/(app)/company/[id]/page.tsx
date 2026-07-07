@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import CompanyView from './CompanyView'
 
+const DANI_USER_ID = 'eb86e161-f13f-4bc2-9736-038136099aff'
+
 export default async function CompanyPage({
   params,
 }: {
@@ -10,7 +12,8 @@ export default async function CompanyPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: company }, { data: tasks }, { data: people }] = await Promise.all([
+  const [{ data: { user } }, { data: company }, { data: tasks }, { data: people }] = await Promise.all([
+    supabase.auth.getUser(),
     supabase.from('companies').select('id, name').eq('id', id).single(),
     supabase
       .from('tasks')
@@ -28,6 +31,7 @@ export default async function CompanyPage({
       company={company}
       tasks={tasks ?? []}
       people={(people ?? []).map(p => p.name)}
+      showReminder={user?.id === DANI_USER_ID}
     />
   )
 }

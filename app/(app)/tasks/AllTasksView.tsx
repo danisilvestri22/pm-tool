@@ -9,9 +9,10 @@ interface Props {
   tasks: Task[]
   companies: Record<string, string>
   people: string[]
+  showReminder?: boolean
 }
 
-export default function AllTasksView({ tasks, companies, people }: Props) {
+export default function AllTasksView({ tasks, companies, people, showReminder }: Props) {
   const [view, setView] = useState<'list' | 'board'>('list')
   const [search, setSearch] = useState('')
 
@@ -36,7 +37,7 @@ export default function AllTasksView({ tasks, companies, people }: Props) {
       ) : (
         <div className="flex-1 overflow-hidden">
           {view === 'list' ? (
-            <TaskList tasks={tasks} showCompany companies={companies} people={people} search={search} />
+            <TaskList tasks={tasks} showCompany companies={companies} people={people} search={search} showReminder={showReminder} />
           ) : (
             <TaskBoard tasks={tasks} />
           )}

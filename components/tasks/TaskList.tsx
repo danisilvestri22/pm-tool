@@ -14,9 +14,10 @@ interface Props {
   companies?: Record<string, string>
   people?: string[]
   search?: string
+  showReminder?: boolean
 }
 
-export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '' }: Props) {
+export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '', showReminder = false }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
@@ -59,8 +60,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
     })
 
   const columns = showCompany
-    ? ['Task', 'Company', 'Responsible', 'Priority', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
-    : ['Task', 'Responsible', 'Priority', 'Status', 'Due date', 'Reminder', 'Waiting on', 'Notes']
+    ? ['Task', 'Company', 'Responsible', 'Priority', 'Status', 'Due date', ...(showReminder ? ['Reminder'] : []), 'Waiting on', 'Notes']
+    : ['Task', 'Responsible', 'Priority', 'Status', 'Due date', ...(showReminder ? ['Reminder'] : []), 'Waiting on', 'Notes']
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -84,8 +85,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
               className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
               style={{
                 gridTemplateColumns: showCompany
-                  ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px'
-                  : '2fr 1fr 60px 110px 120px 120px 120px 200px',
+                  ? (showReminder ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 1fr 60px 110px 120px 120px 200px')
+                  : (showReminder ? '2fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 60px 110px 120px 120px 200px'),
               }}
             >
               {columns.map(col => (
@@ -101,6 +102,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
                   companyName={companies[task.company_id]}
                   subtaskCount={subtaskCounts[task.id] ?? 0}
                   people={people}
+                  showReminder={showReminder}
                   onSelect={setSelectedTask}
                 />
               ))}

@@ -3,10 +3,13 @@ import AllTasksView from './AllTasksView'
 
 export const metadata = { title: 'All Tasks' }
 
+const DANI_USER_ID = 'eb86e161-f13f-4bc2-9736-038136099aff'
+
 export default async function TasksPage() {
   const supabase = await createClient()
 
-  const [{ data: tasks }, { data: companies }, { data: people }] = await Promise.all([
+  const [{ data: { user } }, { data: tasks }, { data: companies }, { data: people }] = await Promise.all([
+    supabase.auth.getUser(),
     supabase
       .from('tasks')
       .select('*')
@@ -24,6 +27,7 @@ export default async function TasksPage() {
       tasks={tasks ?? []}
       companies={companyMap}
       people={(people ?? []).map(p => p.name)}
+      showReminder={user?.id === DANI_USER_ID}
     />
   )
 }

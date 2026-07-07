@@ -11,6 +11,7 @@ interface Props {
   companyName?: string
   subtaskCount?: number
   people?: string[]
+  showReminder?: boolean
   onSelect: (task: Task) => void
 }
 
@@ -63,7 +64,7 @@ function NotesModal({ taskName, initialValue, onSave, onCancel }: {
   )
 }
 
-export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], onSelect }: Props) {
+export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], showReminder = false, onSelect }: Props) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal, setNameVal] = useState(task.name)
   const [notesVal, setNotesVal] = useState(task.notes ?? '')
@@ -155,8 +156,8 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm"
           style={{
             gridTemplateColumns: showCompany
-              ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px'
-              : '2fr 1fr 60px 110px 120px 120px 120px 200px',
+              ? (showReminder ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 1fr 60px 110px 120px 120px 200px')
+              : (showReminder ? '2fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 60px 110px 120px 120px 200px'),
           }}
         >
           {/* Task name */}
@@ -281,21 +282,23 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             className={`${dateClass} ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-600'}`}
           />
 
-          {/* Reminder date */}
-          <input
-            type="date"
-            value={vals.followup_date}
-            onChange={e => {
-              const old = vals.followup_date
-              setVals(v => ({ ...v, followup_date: e.target.value }))
-              save('followup_date', e.target.value)
-              showUndo('Reminder updated', () => {
-                setVals(v => ({ ...v, followup_date: old }))
-                save('followup_date', old)
-              })
-            }}
-            className={`${dateClass} text-emerald-500`}
-          />
+          {/* Reminder date — only visible to Dani */}
+          {showReminder && (
+            <input
+              type="date"
+              value={vals.followup_date}
+              onChange={e => {
+                const old = vals.followup_date
+                setVals(v => ({ ...v, followup_date: e.target.value }))
+                save('followup_date', e.target.value)
+                showUndo('Reminder updated', () => {
+                  setVals(v => ({ ...v, followup_date: old }))
+                  save('followup_date', old)
+                })
+              }}
+              className={`${dateClass} text-emerald-500`}
+            />
+          )}
 
           {/* Waiting on */}
           <select
