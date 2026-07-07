@@ -120,7 +120,8 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
     setToast({ id: toastIdRef.current, message, undo })
   }
 
-  const isOverdue = vals.due_date && vals.status !== 'done' && new Date(vals.due_date) < new Date()
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  const isOverdue = vals.due_date && vals.status !== 'done' && new Date(vals.due_date + 'T12:00:00') < todayStart
 
   const selectClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer max-w-full'
   const dateClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer w-[120px]'
@@ -169,7 +170,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             </span>
             {vals.due_date && (
               <span className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                {format(new Date(vals.due_date), 'MMM d')}
+                {format(new Date(vals.due_date + 'T12:00:00'), 'MMM d')}
               </span>
             )}
           </div>

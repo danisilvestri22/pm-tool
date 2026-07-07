@@ -91,7 +91,8 @@ function SnoozeMenu({ id }: { id: string }) {
 function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const isOverdue = r.due_date && !r.completed_at && new Date(r.due_date) < new Date()
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  const isOverdue = r.due_date && !r.completed_at && new Date(r.due_date + 'T12:00:00') < todayStart
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -131,7 +132,7 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
         {r.details && <p className="text-xs text-gray-500 mt-0.5 whitespace-pre-wrap">{r.details}</p>}
         {r.due_date && (
           <p className={`text-xs mt-1 ${isOverdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-            Due {format(new Date(r.due_date), 'MMM d, yyyy')}{isOverdue ? ' — overdue' : ''}
+            Due {format(new Date(r.due_date + 'T12:00:00'), 'MMM d, yyyy')}{isOverdue ? ' — overdue' : ''}
           </p>
         )}
       </div>
@@ -161,7 +162,8 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
 function TaskItem({ task, pinned, reminderDate: initialReminderDate, companies }: { task: Task; pinned: boolean; reminderDate: string | null; companies: Record<string, string> }) {
   const [localPinned, setLocalPinned] = useState(pinned)
   const [reminderDate, setReminderDate] = useState(initialReminderDate ?? '')
-  const isOverdue = reminderDate && new Date(reminderDate) < new Date()
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  const isOverdue = reminderDate && new Date(reminderDate + 'T12:00:00') < todayStart
 
   async function handleUnpin() {
     setLocalPinned(false)
@@ -183,15 +185,17 @@ function TaskItem({ task, pinned, reminderDate: initialReminderDate, companies }
           {companies[task.company_id] && (
             <span className="text-xs text-gray-400">{companies[task.company_id]}</span>
           )}
-          <input
-            type="date"
-            value={reminderDate}
-            onChange={handleDateChange}
-            className={`text-xs border-0 bg-transparent focus:outline-none focus:ring-0 cursor-pointer ${
-              isOverdue ? 'text-red-500 font-medium' : reminderDate ? 'text-emerald-600' : 'text-gray-400'
-            }`}
-            title="Set reminder date for this tab only"
-          />
+          {localPinned && (
+            <input
+              type="date"
+              value={reminderDate}
+              onChange={handleDateChange}
+              className={`text-xs border-0 bg-transparent focus:outline-none focus:ring-0 cursor-pointer ${
+                isOverdue ? 'text-red-500 font-medium' : reminderDate ? 'text-emerald-600' : 'text-gray-400'
+              }`}
+              title="Set reminder date for this tab only"
+            />
+          )}
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0 mt-0.5">
@@ -257,15 +261,10 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
-  const [showTasks, setShowTasks] = useState(false)
-  const [myName, setMyName] = useState('')
+  const [showTasks, setShowTasks] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('reminders_show_tasks') === 'true' : false)
+  const [myName, setMyName] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem('reminders_my_name') ?? '') : '')
   const [myTasks, setMyTasks] = useState<Task[]>([])
   const [loadingTasks, setLoadingTasks] = useState(false)
-
-  useEffect(() => {
-    setShowTasks(localStorage.getItem('reminders_show_tasks') === 'true')
-    setMyName(localStorage.getItem('reminders_my_name') ?? '')
-  }, [])
 
   useEffect(() => {
     localStorage.setItem('reminders_show_tasks', showTasks ? 'true' : 'false')
