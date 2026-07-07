@@ -1,7 +1,9 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
+import { Pin } from 'lucide-react'
 import { updateTask } from '@/app/(app)/actions/tasks'
+import { pinTask, unpinTask } from '@/app/(app)/actions/reminders'
 import type { Task } from '@/types/database'
 import Toast from '@/components/ui/Toast'
 
@@ -12,6 +14,7 @@ interface Props {
   subtaskCount?: number
   people?: string[]
   showReminder?: boolean
+  pinnedTaskIds?: string[]
   onSelect: (task: Task) => void
 }
 
@@ -64,7 +67,7 @@ function NotesModal({ taskName, initialValue, onSave, onCancel }: {
   )
 }
 
-export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], showReminder = false, onSelect }: Props) {
+export default function TaskRow({ task, showCompany, companyName, subtaskCount = 0, people = [], showReminder = false, pinnedTaskIds = [], onSelect }: Props) {
   const [editingName, setEditingName] = useState(false)
   const [nameVal, setNameVal] = useState(task.name)
   const [notesVal, setNotesVal] = useState(task.notes ?? '')
@@ -78,6 +81,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
     waiting_on: task.waiting_on ?? '',
   })
   const [toast, setToast] = useState<{ id: number; message: string; undo: () => void } | null>(null)
+  const [pinned, setPinned] = useState(pinnedTaskIds.includes(task.id))
   const toastIdRef = useRef(0)
 
   useEffect(() => {
@@ -92,6 +96,14 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
       waiting_on: task.waiting_on ?? '',
     })
   }, [task])
+
+  async function handlePinToggle(e: React.MouseEvent) {
+    e.stopPropagation()
+    const next = !pinned
+    setPinned(next)
+    const result = next ? await pinTask(task.id) : await unpinTask(task.id)
+    if (result?.error) setPinned(!next)
+  }
 
   async function save(field: string, value: string) {
     const fd = new FormData()
@@ -171,7 +183,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           }}
         >
           {/* Task name */}
-          <div className="flex items-center gap-1 min-w-0">
+          <div className="group/row flex items-center gap-1 min-w-0">
             {editingName ? (
               <input
                 autoFocus
@@ -211,6 +223,17 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
                 )}
               </button>
             )}
+            <button
+              onClick={handlePinToggle}
+              className={`ml-1 shrink-0 transition-colors ${
+                pinned
+                  ? 'text-emerald-500'
+                  : 'text-transparent group-hover/row:text-gray-300 hover:!text-emerald-400'
+              }`}
+              title={pinned ? 'Unpin from Reminders' : 'Pin to Reminders'}
+            >
+              <Pin size={12} />
+            </button>
           </div>
 
           {showCompany && (

@@ -12,16 +12,12 @@ export default async function CompanyPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: { user } }, { data: company }, { data: tasks }, { data: people }] = await Promise.all([
+  const [{ data: { user } }, { data: company }, { data: tasks }, { data: people }, { data: pins }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('companies').select('id, name').eq('id', id).single(),
-    supabase
-      .from('tasks')
-      .select('*')
-      .eq('company_id', id)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false }),
+    supabase.from('tasks').select('*').eq('company_id', id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('people').select('name').order('name'),
+    supabase.from('user_pinned_tasks').select('task_id'),
   ])
 
   if (!company) notFound()
@@ -32,6 +28,7 @@ export default async function CompanyPage({
       tasks={tasks ?? []}
       people={(people ?? []).map(p => p.name)}
       showReminder={user?.id === DANI_USER_ID}
+      pinnedTaskIds={(pins ?? []).map(p => p.task_id)}
     />
   )
 }

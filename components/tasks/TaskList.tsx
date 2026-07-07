@@ -15,9 +15,10 @@ interface Props {
   people?: string[]
   search?: string
   showReminder?: boolean
+  pinnedTaskIds?: string[]
 }
 
-export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '', showReminder = false }: Props) {
+export default function TaskList({ tasks, showCompany, companies = {}, people = [], search = '', showReminder = false, pinnedTaskIds = [] }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
@@ -103,6 +104,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
                   subtaskCount={subtaskCounts[task.id] ?? 0}
                   people={people}
                   showReminder={showReminder}
+                  pinnedTaskIds={pinnedTaskIds}
                   onSelect={setSelectedTask}
                 />
               ))}

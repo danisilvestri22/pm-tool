@@ -18,9 +18,10 @@ interface Props {
   tasks: Task[]
   people: string[]
   showReminder?: boolean
+  pinnedTaskIds?: string[]
 }
 
-export default function CompanyView({ company, tasks, people, showReminder }: Props) {
+export default function CompanyView({ company, tasks, people, showReminder, pinnedTaskIds = [] }: Props) {
   const [view, setView] = useState<'list' | 'board'>('list')
   const [search, setSearch] = useState('')
   const [editingName, setEditingName] = useState(false)
@@ -80,7 +81,7 @@ export default function CompanyView({ company, tasks, people, showReminder }: Pr
       <AddTaskButton companyId={company.id} people={people} />
       <div className="flex-1 overflow-hidden">
         {view === 'list' ? (
-          <TaskList tasks={tasks} people={people} search={search} showReminder={showReminder} />
+          <TaskList tasks={tasks} people={people} search={search} showReminder={showReminder} pinnedTaskIds={pinnedTaskIds} />
         ) : (
           <TaskBoard tasks={tasks} />
         )}
