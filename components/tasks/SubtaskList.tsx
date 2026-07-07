@@ -71,7 +71,7 @@ function SubtaskItem({ sub, onDelete }: { sub: Task; onDelete: () => void }) {
       )}
 
       <button
-        onClick={onDelete}
+        onClick={() => { if (window.confirm('Delete this subtask?')) onDelete() }}
         className="text-transparent group-hover:text-gray-300 hover:!text-red-400 transition-colors shrink-0"
         title="Delete subtask"
       >

@@ -46,6 +46,7 @@ function CommentsSection({ taskId }: { taskId: string }) {
   }
 
   async function handleDelete(id: string) {
+    if (!window.confirm('Delete this comment?')) return
     await deleteComment(id)
     setComments(prev => prev.filter(c => c.id !== id))
   }
@@ -265,18 +266,23 @@ export default function TaskPanel({ task, subtasks = [], people = [], onClose }:
             </TaskPanelField>
           )}
 
-          <TaskPanelField label={`Subtasks${subtasks.length > 0 ? ` (${subtasks.length})` : ''}`}>
-            <SubtaskList parentTask={task} subtasks={subtasks} />
-          </TaskPanelField>
+          <div className="border-t pt-4">
+            <TaskPanelField label={`Subtasks${subtasks.length > 0 ? ` (${subtasks.length})` : ''}`}>
+              <SubtaskList parentTask={task} subtasks={subtasks} />
+            </TaskPanelField>
+          </div>
 
-          <TaskPanelField label="Comments">
-            <CommentsSection taskId={task.id} />
-          </TaskPanelField>
+          <div className="bg-gray-50 rounded-lg p-3 -mx-1">
+            <TaskPanelField label="Comments">
+              <CommentsSection taskId={task.id} />
+            </TaskPanelField>
+          </div>
         </dl>
 
         <div className="p-4 border-t">
           <button
             onClick={async () => {
+              if (!window.confirm(`Delete "${task.name}"?`)) return
               const name = task.name
               const id = task.id
               onClose()
