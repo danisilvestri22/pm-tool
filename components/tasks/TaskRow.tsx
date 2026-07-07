@@ -329,8 +329,12 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
 
           {/* Desktop */}
           <div
-            className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm"
+            className="hidden sm:grid items-center gap-3 px-4 py-2 text-sm cursor-pointer"
             style={{ gridTemplateColumns: gridCols(!!showCompany, showReminder) }}
+            onClick={e => {
+              if ((e.target as HTMLElement).closest('button, select, input, a')) return
+              onSelect(task)
+            }}
           >
             {/* Task name cell */}
             <div className="group/row flex items-center gap-1 min-w-0">
