@@ -152,12 +152,6 @@ function ReminderRow({ r }: { r: Reminder }) {
             Due {format(new Date(r.due_date + 'T12:00:00'), 'MMM d, yyyy')}{isOverdue ? ' — overdue' : ''}
           </p>
         )}
-        {isSnoozed && (
-          <p className="text-xs mt-1 text-amber-500 flex items-center gap-1">
-            <Clock size={10} />
-            Snoozed until {format(new Date(r.snoozed_until!.slice(0, 10) + 'T12:00:00'), 'MMM d')}
-          </p>
-        )}
       </div>
       {!r.completed_at && (
         <div className="flex items-center gap-3 shrink-0 mt-0.5">
@@ -268,7 +262,7 @@ function GroupSection({
         <span className="text-xs text-gray-400">{items.length}</span>
       </button>
       {open && (
-        <div className={`bg-white border ${borderColor} rounded-xl overflow-hidden`}>
+        <div className={`bg-white border ${borderColor} rounded-xl`}>
           {items.map((item) =>
             item.kind === 'reminder'
               ? <ReminderRow key={`r-${item.data.id}`} r={item.data} />

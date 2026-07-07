@@ -86,8 +86,8 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
               className="hidden sm:grid px-4 py-2 text-xs text-gray-400 uppercase tracking-wide border-b gap-3"
               style={{
                 gridTemplateColumns: showCompany
-                  ? (showReminder ? '2fr 1fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 1fr 60px 110px 120px 120px 200px')
-                  : (showReminder ? '2fr 1fr 60px 110px 120px 120px 120px 200px' : '2fr 1fr 60px 110px 120px 120px 200px'),
+                  ? (showReminder ? '4fr 1fr 1fr 60px 100px 100px 100px 100px 160px' : '4fr 1fr 1fr 60px 100px 100px 100px 160px')
+                  : (showReminder ? '4fr 1fr 60px 100px 100px 100px 100px 160px' : '4fr 1fr 60px 100px 100px 100px 160px'),
               }}
             >
               {columns.map(col => (
