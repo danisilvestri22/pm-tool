@@ -9,6 +9,14 @@ import type { Task } from '@/types/database'
 const priorityOrder = { high: 0, medium: 1, low: 2 }
 const statusOrder: Record<string, number> = { at_risk: 0, blocked: 1, waiting_on_response: 2, in_progress: 3, not_started: 4, done: 5 }
 
+const STATUS_GROUPS: { key: string; label: string; color: string }[] = [
+  { key: 'at_risk',              label: 'At Risk',               color: 'text-red-500' },
+  { key: 'blocked',              label: 'Blocked',               color: 'text-red-700' },
+  { key: 'waiting_on_response',  label: 'Waiting on Response',   color: 'text-amber-500' },
+  { key: 'in_progress',          label: 'In Progress',           color: 'text-blue-500' },
+  { key: 'not_started',          label: 'Not Started',           color: 'text-gray-500' },
+]
+
 interface Props {
   tasks: Task[]
   showCompany?: boolean
@@ -23,6 +31,10 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
   const [completedOpen, setCompletedOpen] = useState(false)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+
+  function isSectionOpen(key: string) { return openSections[key] !== false }
+  function toggleSection(key: string) { setOpenSections(prev => ({ ...prev, [key]: !isSectionOpen(key) })) }
 
   const subtasksFor = (id: string) => tasks.filter(t => t.parent_task_id === id)
   const topLevel = tasks.filter(t => !t.parent_task_id)
@@ -107,22 +119,45 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
               ))}
             </div>
 
-            {/* Active tasks */}
-            <div className="divide-y divide-gray-50">
-              {filtered.map(task => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  showCompany={showCompany}
-                  companyName={companies[task.company_id]}
-                  subtasks={subtasksFor(task.id)}
-                  people={people}
-                  showReminder={showReminder}
-                  pinnedTaskIds={pinnedTaskIds}
-                  onSelect={setSelectedTask}
-                />
-              ))}
-            </div>
+            {/* Active tasks — grouped by status */}
+            {STATUS_GROUPS.map(group => {
+              const groupTasks = filtered.filter(t => t.status === group.key)
+              if (groupTasks.length === 0) return null
+              const isOpen = isSectionOpen(group.key)
+              return (
+                <div key={group.key} className="border-t">
+                  <button
+                    onClick={() => toggleSection(group.key)}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    {isOpen
+                      ? <ChevronDown size={13} className="text-gray-400 shrink-0" />
+                      : <ChevronRight size={13} className="text-gray-400 shrink-0" />}
+                    <span className={`text-xs font-semibold uppercase tracking-wide ${group.color}`}>
+                      {group.label}
+                    </span>
+                    <span className="text-xs text-gray-400">{groupTasks.length}</span>
+                  </button>
+                  {isOpen && (
+                    <div className="divide-y divide-gray-50">
+                      {groupTasks.map(task => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          showCompany={showCompany}
+                          companyName={companies[task.company_id]}
+                          subtasks={subtasksFor(task.id)}
+                          people={people}
+                          showReminder={showReminder}
+                          pinnedTaskIds={pinnedTaskIds}
+                          onSelect={setSelectedTask}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
 
             {/* Completed section */}
             {hasCompleted && (
