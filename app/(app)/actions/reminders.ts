@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Task } from '@/types/database'
 
 export async function createReminder(formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
@@ -65,4 +66,44 @@ export async function deleteReminder(id: string) {
   if (error) return { error: 'Failed to delete' }
   revalidatePath('/reminders')
   return { success: true }
+}
+
+export async function pinTask(taskId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+  const { error } = await supabase
+    .from('user_pinned_tasks')
+    .insert({ user_id: user.id, task_id: taskId })
+  if (error) return { error: 'Failed to pin task' }
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
+export async function unpinTask(taskId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+  const { error } = await supabase
+    .from('user_pinned_tasks')
+    .delete()
+    .eq('task_id', taskId)
+    .eq('user_id', user.id)
+  if (error) return { error: 'Failed to unpin task' }
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
+export async function getMyTasks(name: string): Promise<Task[]> {
+  if (!name) return []
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('responsible', name)
+    .neq('status', 'done')
+    .is('deleted_at', null)
+    .is('parent_task_id', null)
+    .order('due_date', { ascending: true, nullsFirst: false })
+  return (data ?? []) as Task[]
 }
