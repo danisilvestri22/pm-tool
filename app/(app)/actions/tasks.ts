@@ -52,6 +52,27 @@ function coerceUpdate(raw: Record<string, FormDataEntryValue>) {
   )
 }
 
+export async function createSubtask(parentTaskId: string, name: string, companyId: string) {
+  if (!name.trim()) return { error: 'Name is required' }
+  const supabase = await createClient()
+  const { error } = await supabase.from('tasks').insert({
+    name: name.trim(),
+    parent_task_id: parentTaskId,
+    company_id: companyId,
+    status: 'not_started' as const,
+    priority: 'medium' as const,
+    responsible: null,
+    due_date: null,
+    followup_date: null,
+    waiting_on: null,
+    notes: null,
+    board_column: 'todo' as const,
+  })
+  if (error) return { error: 'Failed to create subtask' }
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
 export async function createTask(formData: FormData) {
   const raw = Object.fromEntries(formData.entries())
   const parsed = TaskSchema.safeParse(coerce(raw))

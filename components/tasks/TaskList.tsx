@@ -22,10 +22,6 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [filters, setFilters] = useState<Filters>(defaultFilters)
 
-  const subtaskCounts = tasks.reduce<Record<string, number>>((acc, t) => {
-    if (t.parent_task_id) acc[t.parent_task_id] = (acc[t.parent_task_id] ?? 0) + 1
-    return acc
-  }, {})
   const subtasksFor = (id: string) => tasks.filter(t => t.parent_task_id === id)
   const topLevel = tasks.filter(t => !t.parent_task_id)
 
@@ -101,7 +97,7 @@ export default function TaskList({ tasks, showCompany, companies = {}, people = 
                   task={task}
                   showCompany={showCompany}
                   companyName={companies[task.company_id]}
-                  subtaskCount={subtaskCounts[task.id] ?? 0}
+                  subtasks={subtasksFor(task.id)}
                   people={people}
                   showReminder={showReminder}
                   pinnedTaskIds={pinnedTaskIds}
