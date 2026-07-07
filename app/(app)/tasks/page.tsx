@@ -7,13 +7,13 @@ const DANI_USER_ID = 'eb86e161-f13f-4bc2-9736-038136099aff'
 
 export default async function TasksPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: { user } }, { data: tasks }, { data: companies }, { data: people }, { data: pins }] = await Promise.all([
-    supabase.auth.getUser(),
+  const [{ data: tasks }, { data: companies }, { data: people }, { data: pins }] = await Promise.all([
     supabase.from('tasks').select('*').is('deleted_at', null).neq('status', 'done').order('due_date', { ascending: true, nullsFirst: false }),
     supabase.from('companies').select('id, name'),
     supabase.from('people').select('name').order('name'),
-    supabase.from('user_pinned_tasks').select('task_id'),
+    supabase.from('user_pinned_tasks').select('task_id').eq('user_id', user!.id),
   ])
 
   const companyMap = Object.fromEntries((companies ?? []).map(c => [c.id, c.name]))

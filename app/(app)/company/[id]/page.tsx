@@ -11,13 +11,13 @@ export default async function CompanyPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: { user } }, { data: company }, { data: tasks }, { data: people }, { data: pins }] = await Promise.all([
-    supabase.auth.getUser(),
+  const [{ data: company }, { data: tasks }, { data: people }, { data: pins }] = await Promise.all([
     supabase.from('companies').select('id, name').eq('id', id).single(),
     supabase.from('tasks').select('*').eq('company_id', id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('people').select('name').order('name'),
-    supabase.from('user_pinned_tasks').select('task_id'),
+    supabase.from('user_pinned_tasks').select('task_id').eq('user_id', user!.id),
   ])
 
   if (!company) notFound()

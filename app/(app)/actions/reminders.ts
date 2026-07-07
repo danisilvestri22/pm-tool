@@ -97,6 +97,8 @@ export async function unpinTask(taskId: string) {
 export async function getMyTasks(name: string): Promise<Task[]> {
   if (!name) return []
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
   const { data } = await supabase
     .from('tasks')
     .select('*')

@@ -86,6 +86,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
 
   useEffect(() => {
     setNameVal(task.name)
+    setPinned(pinnedTaskIds.includes(task.id))
     setNotesVal(task.notes ?? '')
     setVals({
       responsible: task.responsible ?? '',
@@ -95,7 +96,7 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
       followup_date: task.followup_date ?? '',
       waiting_on: task.waiting_on ?? '',
     })
-  }, [task])
+  }, [task, pinnedTaskIds])
 
   async function handlePinToggle(e: React.MouseEvent) {
     e.stopPropagation()
