@@ -43,7 +43,7 @@ function getGroup(dueDate: string | null): GroupKey {
   if (!dueDate) return 'unscheduled'
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const due = new Date(dueDate)
+  const due = new Date(dueDate + 'T12:00:00')
   due.setHours(0, 0, 0, 0)
   const diffDays = Math.round((due.getTime() - today.getTime()) / 86400000)
   if (diffDays < 0) return 'overdue'

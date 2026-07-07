@@ -40,7 +40,7 @@ export default function AllTasksView({ tasks, companies, people, showReminder, p
           {view === 'list' ? (
             <TaskList tasks={tasks} showCompany companies={companies} people={people} search={search} showReminder={showReminder} pinnedTaskIds={pinnedTaskIds} />
           ) : (
-            <TaskBoard tasks={tasks} />
+            <TaskBoard tasks={tasks} people={people} />
           )}
         </div>
       )}

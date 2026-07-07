@@ -83,7 +83,7 @@ export default function CompanyView({ company, tasks, people, showReminder, pinn
         {view === 'list' ? (
           <TaskList tasks={tasks} people={people} search={search} showReminder={showReminder} pinnedTaskIds={pinnedTaskIds} />
         ) : (
-          <TaskBoard tasks={tasks} />
+          <TaskBoard tasks={tasks} people={people} />
         )}
       </div>
     </div>

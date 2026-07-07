@@ -31,8 +31,9 @@ export default function BoardCard({ task, subtaskCount = 0, onSelect }: Props) {
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined
 
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const isOverdue =
-    task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date()
+    task.due_date && task.status !== 'done' && new Date(task.due_date + 'T12:00:00') < todayStart
 
   return (
     <div

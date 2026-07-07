@@ -52,7 +52,7 @@ function DroppableColumn({
   )
 }
 
-export default function TaskBoard({ tasks: propTasks }: { tasks: Task[] }) {
+export default function TaskBoard({ tasks: propTasks, people = [] }: { tasks: Task[]; people?: string[] }) {
   const [localTasks, setLocalTasks] = useState(propTasks)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
@@ -129,6 +129,7 @@ export default function TaskBoard({ tasks: propTasks }: { tasks: Task[] }) {
         <TaskPanel
           task={selectedTask}
           subtasks={selectedTask ? subtasksFor(selectedTask.id) : []}
+          people={people}
           onClose={() => setSelectedTask(null)}
         />
       </div>
