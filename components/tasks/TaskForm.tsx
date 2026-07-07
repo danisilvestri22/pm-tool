@@ -124,10 +124,13 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1">Status</label>
-          <select name="status" defaultValue={task?.status ?? 'on_track'} className={inputClass}>
-            <option value="on_track">On track</option>
-            <option value="at_risk">At risk</option>
-            <option value="completed">Completed</option>
+          <select name="status" defaultValue={task?.status ?? 'not_started'} className={inputClass}>
+            <option value="not_started">Not Started</option>
+            <option value="in_progress">In Progress</option>
+            <option value="waiting_on_response">Waiting on Response</option>
+            <option value="blocked">Blocked</option>
+            <option value="at_risk">Overdue / At Risk</option>
+            <option value="done">Done</option>
           </select>
         </div>
         <div>

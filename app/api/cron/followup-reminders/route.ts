@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       .from('tasks')
       .select('id, name, followup_date, companies(name)')
       .is('deleted_at', null)
-      .neq('status', 'completed')
+      .neq('status', 'done')
       .not('followup_date', 'is', null)
       .lte('followup_date', in7daysStr)
       .order('followup_date'),

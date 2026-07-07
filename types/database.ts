@@ -1,4 +1,4 @@
-export type Status = 'on_track' | 'at_risk' | 'completed'
+export type Status = 'not_started' | 'in_progress' | 'waiting_on_response' | 'blocked' | 'at_risk' | 'done'
 export type Priority = 'high' | 'medium' | 'low'
 export type BoardColumn = 'todo' | 'in_progress' | 'done'
 

@@ -6,7 +6,7 @@ import FilterBar, { type Filters, defaultFilters } from './FilterBar'
 import type { Task } from '@/types/database'
 
 const priorityOrder = { high: 0, medium: 1, low: 2 }
-const statusOrder = { at_risk: 0, on_track: 1, completed: 2 }
+const statusOrder: Record<string, number> = { at_risk: 0, blocked: 1, waiting_on_response: 2, in_progress: 3, not_started: 4, done: 5 }
 
 interface Props {
   tasks: Task[]

@@ -44,9 +44,12 @@ export default function FilterBar({ filters, onChange, companies }: Props) {
       )}
       <select value={filters.status} onChange={set('status')} className={inputClass}>
         <option value="">All statuses</option>
-        <option value="on_track">On track</option>
-        <option value="at_risk">At risk</option>
-        <option value="completed">Completed</option>
+        <option value="not_started">Not Started</option>
+        <option value="in_progress">In Progress</option>
+        <option value="waiting_on_response">Waiting on Response</option>
+        <option value="blocked">Blocked</option>
+        <option value="at_risk">Overdue / At Risk</option>
+        <option value="done">Done</option>
       </select>
       <select value={filters.priority} onChange={set('priority')} className={inputClass}>
         <option value="">All priorities</option>

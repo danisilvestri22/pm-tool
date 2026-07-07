@@ -11,7 +11,7 @@ interface Props {
 
 export default function BoardCard({ task, subtaskCount = 0, onSelect }: Props) {
   const isOverdue =
-    task.due_date && task.status !== 'completed' && new Date(task.due_date) < new Date()
+    task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date()
 
   return (
     <button

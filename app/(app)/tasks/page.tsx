@@ -14,7 +14,7 @@ export default async function TasksPage() {
       .from('tasks')
       .select('*')
       .is('deleted_at', null)
-      .neq('status', 'completed')
+      .neq('status', 'done')
       .order('due_date', { ascending: true, nullsFirst: false }),
     supabase.from('companies').select('id, name'),
     supabase.from('people').select('name').order('name'),

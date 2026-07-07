@@ -67,7 +67,7 @@ export default async function SharePage({
               {topLevelTasks.map(task => {
                 const isOverdue =
                   task.due_date &&
-                  task.status !== 'completed' &&
+                  task.status !== 'done' &&
                   new Date(task.due_date) < new Date()
                 return (
                   <div

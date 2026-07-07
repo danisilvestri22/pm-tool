@@ -106,14 +106,17 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
     setToast({ id: toastIdRef.current, message, undo })
   }
 
-  const isOverdue = vals.due_date && vals.status !== 'completed' && new Date(vals.due_date) < new Date()
+  const isOverdue = vals.due_date && vals.status !== 'done' && new Date(vals.due_date) < new Date()
 
   const selectClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer max-w-full'
   const dateClass = 'text-xs bg-transparent border border-transparent rounded px-1.5 py-1 hover:border-gray-200 hover:bg-white focus:outline-none focus:border-emerald-400 cursor-pointer w-[120px]'
 
   const statusColor =
-    vals.status === 'completed' ? 'text-green-700' :
+    vals.status === 'done' ? 'text-green-700' :
     vals.status === 'at_risk' ? 'text-red-600' :
+    vals.status === 'blocked' ? 'text-orange-600' :
+    vals.status === 'waiting_on_response' ? 'text-yellow-700' :
+    vals.status === 'not_started' ? 'text-gray-500' :
     'text-blue-700'
 
   return (
@@ -137,11 +140,18 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-              vals.status === 'completed' ? 'bg-green-100 text-green-700' :
+              vals.status === 'done' ? 'bg-green-100 text-green-700' :
               vals.status === 'at_risk' ? 'bg-red-100 text-red-700' :
+              vals.status === 'blocked' ? 'bg-orange-100 text-orange-700' :
+              vals.status === 'waiting_on_response' ? 'bg-yellow-100 text-yellow-700' :
+              vals.status === 'not_started' ? 'bg-gray-100 text-gray-500' :
               'bg-blue-100 text-blue-700'
             }`}>
-              {vals.status === 'on_track' ? 'On track' : vals.status === 'at_risk' ? 'At risk' : 'Done'}
+              {vals.status === 'not_started' ? 'Not Started' :
+               vals.status === 'in_progress' ? 'In Progress' :
+               vals.status === 'waiting_on_response' ? 'Waiting' :
+               vals.status === 'blocked' ? 'Blocked' :
+               vals.status === 'at_risk' ? 'At Risk' : 'Done'}
             </span>
             {vals.due_date && (
               <span className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
@@ -261,9 +271,12 @@ export default function TaskRow({ task, showCompany, companyName, subtaskCount =
             }}
             className={`${selectClass} font-medium ${statusColor}`}
           >
-            <option value="on_track">On track</option>
-            <option value="at_risk">At risk</option>
-            <option value="completed">Completed</option>
+            <option value="not_started">Not Started</option>
+            <option value="in_progress">In Progress</option>
+            <option value="waiting_on_response">Waiting on Response</option>
+            <option value="blocked">Blocked</option>
+            <option value="at_risk">Overdue / At Risk</option>
+            <option value="done">Done</option>
           </select>
 
           {/* Due date */}

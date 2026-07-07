@@ -16,7 +16,7 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
 
   async function toggleComplete(subtask: Task) {
     const fd = new FormData()
-    fd.set('status', subtask.status === 'completed' ? 'on_track' : 'completed')
+    fd.set('status', subtask.status === 'done' ? 'in_progress' : 'done')
     await updateTask(subtask.id, fd)
   }
 
@@ -40,13 +40,13 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
           <button
             onClick={() => toggleComplete(sub)}
             className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
-              sub.status === 'completed'
+              sub.status === 'done'
                 ? 'bg-emerald-500 border-emerald-500 text-white'
                 : 'border-gray-300 hover:border-emerald-400'
             }`}
-            aria-label={sub.status === 'completed' ? 'Mark incomplete' : 'Mark complete'}
+            aria-label={sub.status === 'done' ? 'Mark incomplete' : 'Mark complete'}
           >
-            {sub.status === 'completed' && (
+            {sub.status === 'done' && (
               <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 10 10">
                 <path
                   d="M1.5 5l2.5 2.5 4.5-4.5"
@@ -60,7 +60,7 @@ export default function SubtaskList({ parentTask, subtasks }: Props) {
           </button>
           <span
             className={`text-sm ${
-              sub.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-700'
+              sub.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'
             }`}
           >
             {sub.name}
