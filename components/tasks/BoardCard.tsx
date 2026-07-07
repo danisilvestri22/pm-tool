@@ -1,4 +1,5 @@
 'use client'
+import { useRef, useEffect } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { format } from 'date-fns'
 import StatusBadge from './StatusBadge'
@@ -15,6 +16,17 @@ export default function BoardCard({ task, subtaskCount = 0, onSelect }: Props) {
     id: task.id,
   })
 
+  const wasDraggingRef = useRef(false)
+
+  useEffect(() => {
+    if (isDragging) {
+      wasDraggingRef.current = true
+    } else if (wasDraggingRef.current) {
+      const timer = setTimeout(() => { wasDraggingRef.current = false }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [isDragging])
+
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined
@@ -28,7 +40,10 @@ export default function BoardCard({ task, subtaskCount = 0, onSelect }: Props) {
       style={style}
       {...listeners}
       {...attributes}
-      onClick={() => onSelect(task)}
+      onClick={() => {
+        if (wasDraggingRef.current) return
+        onSelect(task)
+      }}
       className={`w-full text-left bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow select-none ${
         isDragging ? 'cursor-grabbing opacity-50 shadow-lg' : 'cursor-grab'
       }`}
