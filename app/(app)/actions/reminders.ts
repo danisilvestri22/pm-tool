@@ -94,6 +94,20 @@ export async function unpinTask(taskId: string) {
   return { success: true }
 }
 
+export async function setTaskReminderDate(taskId: string, date: string | null) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+  const { error } = await supabase
+    .from('user_pinned_tasks')
+    .update({ reminder_date: date || null })
+    .eq('task_id', taskId)
+    .eq('user_id', user.id)
+  if (error) return { error: 'Failed to update reminder date' }
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
 export async function getMyTasks(name: string): Promise<Task[]> {
   if (!name) return []
   const supabase = await createClient()

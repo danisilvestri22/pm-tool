@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { format, addHours, addDays } from 'date-fns'
 import { Bell, Check, Clock, Trash2, Plus, ChevronDown, ChevronRight, Pencil, Pin } from 'lucide-react'
-import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask } from '@/app/(app)/actions/reminders'
+import { createReminder, updateReminder, snoozeReminder, completeReminder, deleteReminder, getMyTasks, unpinTask, setTaskReminderDate } from '@/app/(app)/actions/reminders'
 import StatusBadge from '@/components/tasks/StatusBadge'
 import type { Task } from '@/types/database'
 
@@ -21,13 +21,14 @@ interface Props {
   snoozed: Reminder[]
   completed: Reminder[]
   pinnedTasks: Task[]
+  reminderDates: Record<string, string | null>
   companies: Record<string, string>
   people: string[]
 }
 
 type ListItem =
   | { kind: 'reminder'; data: Reminder }
-  | { kind: 'task'; data: Task; pinned: boolean }
+  | { kind: 'task'; data: Task; pinned: boolean; reminderDate: string | null }
 
 type GroupKey = 'overdue' | 'today' | 'next' | 'scheduled' | 'unscheduled'
 
@@ -157,9 +158,10 @@ function ReminderRow({ r, dim }: { r: Reminder; dim?: boolean }) {
   )
 }
 
-function TaskItem({ task, pinned, companies }: { task: Task; pinned: boolean; companies: Record<string, string> }) {
+function TaskItem({ task, pinned, reminderDate: initialReminderDate, companies }: { task: Task; pinned: boolean; reminderDate: string | null; companies: Record<string, string> }) {
   const [localPinned, setLocalPinned] = useState(pinned)
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date()
+  const [reminderDate, setReminderDate] = useState(initialReminderDate ?? '')
+  const isOverdue = reminderDate && new Date(reminderDate) < new Date()
 
   async function handleUnpin() {
     setLocalPinned(false)
@@ -167,19 +169,29 @@ function TaskItem({ task, pinned, companies }: { task: Task; pinned: boolean; co
     if (result?.error) setLocalPinned(true)
   }
 
+  async function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value
+    setReminderDate(val)
+    await setTaskReminderDate(task.id, val || null)
+  }
+
   return (
     <div className="flex items-start gap-3 px-4 py-3 border-b last:border-0">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900">{task.name}</p>
-        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
           {companies[task.company_id] && (
             <span className="text-xs text-gray-400">{companies[task.company_id]}</span>
           )}
-          {task.due_date && (
-            <span className={`text-xs ${isOverdue ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-              Due {format(new Date(task.due_date), 'MMM d, yyyy')}
-            </span>
-          )}
+          <input
+            type="date"
+            value={reminderDate}
+            onChange={handleDateChange}
+            className={`text-xs border-0 bg-transparent focus:outline-none focus:ring-0 cursor-pointer ${
+              isOverdue ? 'text-red-500 font-medium' : reminderDate ? 'text-emerald-600' : 'text-gray-400'
+            }`}
+            title="Set reminder date for this tab only"
+          />
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0 mt-0.5">
@@ -233,7 +245,7 @@ function GroupSection({
           {items.map((item) =>
             item.kind === 'reminder'
               ? <ReminderRow key={`r-${item.data.id}`} r={item.data} />
-              : <TaskItem key={`t-${item.data.id}`} task={item.data} pinned={item.pinned} companies={companies} />
+              : <TaskItem key={`t-${item.data.id}`} task={item.data} pinned={item.pinned} reminderDate={item.reminderDate} companies={companies} />
           )}
         </div>
       )}
@@ -241,7 +253,7 @@ function GroupSection({
   )
 }
 
-export default function RemindersView({ active, snoozed, completed, pinnedTasks, companies, people }: Props) {
+export default function RemindersView({ active, snoozed, completed, pinnedTasks, reminderDates, companies, people }: Props) {
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
@@ -272,25 +284,30 @@ export default function RemindersView({ active, snoozed, completed, pinnedTasks,
     const seen = new Set<string>()
     for (const task of pinnedTasks) {
       seen.add(task.id)
-      items.push({ kind: 'task', data: task, pinned: true })
+      items.push({ kind: 'task', data: task, pinned: true, reminderDate: reminderDates[task.id] ?? null })
     }
     if (showTasks) {
       for (const task of myTasks) {
         if (!seen.has(task.id)) {
           seen.add(task.id)
-          items.push({ kind: 'task', data: task, pinned: false })
+          items.push({ kind: 'task', data: task, pinned: false, reminderDate: null })
         }
       }
     }
     return items
-  }, [active, pinnedTasks, myTasks, showTasks])
+  }, [active, pinnedTasks, myTasks, showTasks, reminderDates])
+
+  function itemDate(item: ListItem): string | null {
+    if (item.kind === 'reminder') return item.data.due_date
+    return item.reminderDate
+  }
 
   function itemsForGroup(key: GroupKey): ListItem[] {
     return allItems
-      .filter(item => getGroup(item.data.due_date) === key)
+      .filter(item => getGroup(itemDate(item)) === key)
       .sort((a, b) => {
-        const da = a.data.due_date
-        const db = b.data.due_date
+        const da = itemDate(a)
+        const db = itemDate(b)
         if (!da) return 1
         if (!db) return -1
         return da.localeCompare(db)

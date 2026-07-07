@@ -15,7 +15,7 @@ export default async function RemindersPage() {
     { data: people },
   ] = await Promise.all([
     supabase.from('reminders').select('*').eq('user_id', user!.id).order('due_date', { ascending: true, nullsFirst: false }),
-    supabase.from('user_pinned_tasks').select('task_id').eq('user_id', user!.id),
+    supabase.from('user_pinned_tasks').select('task_id, reminder_date').eq('user_id', user!.id),
     supabase.from('companies').select('id, name'),
     supabase.from('people').select('name').order('name'),
   ])
@@ -26,6 +26,9 @@ export default async function RemindersPage() {
   const completed = (allReminders ?? []).filter(r => r.completed_at)
 
   const pinnedTaskIds = (pins ?? []).map(p => p.task_id)
+  const reminderDates: Record<string, string | null> = Object.fromEntries(
+    (pins ?? []).map(p => [p.task_id, p.reminder_date ?? null])
+  )
   let pinnedTasks: Task[] = []
   if (pinnedTaskIds.length > 0) {
     const { data } = await supabase
@@ -45,6 +48,7 @@ export default async function RemindersPage() {
       snoozed={snoozed}
       completed={completed}
       pinnedTasks={pinnedTasks}
+      reminderDates={reminderDates}
       companies={companyMap}
       people={(people ?? []).map(p => p.name)}
     />
