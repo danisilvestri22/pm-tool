@@ -67,7 +67,7 @@ function SnoozeMenu({ id, snoozedUntil }: { id: string; snoozedUntil: string | n
   const options = [
     { label: 'Tomorrow', until: addDays(new Date(), 1).toISOString() },
     { label: '2 days',   until: addDays(new Date(), 2).toISOString() },
-    { label: 'Next week', until: addDays(new Date(), 7).toISOString() },
+    { label: 'Next Monday', until: addDays(new Date(), (8 - new Date().getDay()) % 7 || 7).toISOString() },
   ]
   return (
     <div ref={ref} className="relative">
