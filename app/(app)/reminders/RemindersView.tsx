@@ -64,9 +64,11 @@ function SnoozeMenu({ id, snoozedUntil }: { id: string; snoozedUntil: string | n
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+  const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999)
   const options = [
-    { label: 'Tomorrow', until: addDays(new Date(), 1).toISOString() },
-    { label: '2 days',   until: addDays(new Date(), 2).toISOString() },
+    { label: 'Today',      until: endOfToday.toISOString() },
+    { label: 'Tomorrow',   until: addDays(new Date(), 1).toISOString() },
+    { label: '2 days',     until: addDays(new Date(), 2).toISOString() },
     { label: 'Next Monday', until: addDays(new Date(), (8 - new Date().getDay()) % 7 || 7).toISOString() },
   ]
   return (

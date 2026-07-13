@@ -136,6 +136,7 @@ function SubtaskRow({ task, people, showCompany, showReminder, onDelete }: {
         <option value="waiting_on_response">Waiting on Response</option>
         <option value="blocked">Blocked</option>
         <option value="at_risk">At Risk</option>
+        <option value="future">Future</option>
         <option value="done">Done</option>
       </select>
 
@@ -284,6 +285,7 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
     vals.status === 'blocked' ? 'text-orange-600' :
     vals.status === 'waiting_on_response' ? 'text-yellow-700' :
     vals.status === 'not_started' ? 'text-gray-500' :
+    vals.status === 'future' ? 'text-purple-700' :
     'text-blue-700'
 
   const statusBg =
@@ -292,6 +294,7 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
     vals.status === 'blocked' ? 'bg-orange-50' :
     vals.status === 'waiting_on_response' ? 'bg-yellow-50' :
     vals.status === 'not_started' ? 'bg-gray-100' :
+    vals.status === 'future' ? 'bg-purple-50' :
     'bg-blue-50'
 
   return (
@@ -322,13 +325,15 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
                 vals.status === 'blocked' ? 'bg-orange-100 text-orange-700' :
                 vals.status === 'waiting_on_response' ? 'bg-yellow-100 text-yellow-700' :
                 vals.status === 'not_started' ? 'bg-gray-100 text-gray-500' :
+                vals.status === 'future' ? 'bg-purple-100 text-purple-700' :
                 'bg-blue-100 text-blue-700'
               }`}>
                 {vals.status === 'not_started' ? 'Not Started' :
                  vals.status === 'in_progress' ? 'In Progress' :
                  vals.status === 'waiting_on_response' ? 'Waiting' :
                  vals.status === 'blocked' ? 'Blocked' :
-                 vals.status === 'at_risk' ? 'At Risk' : 'Done'}
+                 vals.status === 'at_risk' ? 'At Risk' :
+                 vals.status === 'future' ? 'Future' : 'Done'}
               </span>
               {vals.due_date && (
                 <span className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
@@ -459,6 +464,7 @@ export default function TaskRow({ task, showCompany, companyName, subtasks = [],
               <option value="waiting_on_response">Waiting on Response</option>
               <option value="blocked">Blocked</option>
               <option value="at_risk">Overdue / At Risk</option>
+              <option value="future">Future</option>
               <option value="done">Done</option>
             </select>
 

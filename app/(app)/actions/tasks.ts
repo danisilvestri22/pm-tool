@@ -7,7 +7,7 @@ const TaskSchema = z.object({
   company_id: z.string().uuid(),
   name: z.string().min(1).max(500),
   responsible: z.string().optional().nullable(),
-  status: z.enum(['not_started', 'in_progress', 'waiting_on_response', 'blocked', 'at_risk', 'done']).default('not_started'),
+  status: z.enum(['not_started', 'in_progress', 'waiting_on_response', 'blocked', 'at_risk', 'done', 'future']).default('not_started'),
   priority: z.enum(['high', 'medium', 'low']).default('medium'),
   due_date: z.string().optional().nullable(),
   followup_date: z.string().optional().nullable(),
@@ -21,7 +21,7 @@ const TaskSchema = z.object({
 const UpdateTaskSchema = z.object({
   name: z.string().min(1).max(500),
   responsible: z.string().nullable(),
-  status: z.enum(['not_started', 'in_progress', 'waiting_on_response', 'blocked', 'at_risk', 'done']),
+  status: z.enum(['not_started', 'in_progress', 'waiting_on_response', 'blocked', 'at_risk', 'done', 'future']),
   priority: z.enum(['high', 'medium', 'low']),
   due_date: z.string().nullable(),
   followup_date: z.string().nullable(),

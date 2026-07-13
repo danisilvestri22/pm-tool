@@ -10,11 +10,12 @@ const priorityOrder = { high: 0, medium: 1, low: 2 }
 const statusOrder: Record<string, number> = { at_risk: 0, blocked: 1, waiting_on_response: 2, in_progress: 3, not_started: 4, done: 5 }
 
 const STATUS_GROUPS: { key: string; label: string; dot: string; bg: string; border: string }[] = [
-  { key: 'at_risk',             label: 'At Risk',              dot: 'bg-red-400',    bg: 'bg-red-50',    border: 'border-l-red-400' },
-  { key: 'blocked',             label: 'Blocked',              dot: 'bg-red-700',    bg: 'bg-red-50',    border: 'border-l-red-700' },
-  { key: 'waiting_on_response', label: 'Waiting on Response',  dot: 'bg-amber-400',  bg: 'bg-amber-50',  border: 'border-l-amber-400' },
-  { key: 'in_progress',         label: 'In Progress',          dot: 'bg-blue-400',   bg: 'bg-blue-50',   border: 'border-l-blue-400' },
-  { key: 'not_started',         label: 'Not Started',          dot: 'bg-gray-300',   bg: 'bg-gray-50',   border: 'border-l-gray-300' },
+  { key: 'at_risk',             label: 'At Risk',              dot: 'bg-red-400',    bg: 'bg-red-50',     border: 'border-l-red-400' },
+  { key: 'blocked',             label: 'Blocked',              dot: 'bg-red-700',    bg: 'bg-red-50',     border: 'border-l-red-700' },
+  { key: 'waiting_on_response', label: 'Waiting on Response',  dot: 'bg-amber-400',  bg: 'bg-amber-50',   border: 'border-l-amber-400' },
+  { key: 'in_progress',         label: 'In Progress',          dot: 'bg-blue-400',   bg: 'bg-blue-50',    border: 'border-l-blue-400' },
+  { key: 'not_started',         label: 'Not Started',          dot: 'bg-gray-300',   bg: 'bg-gray-50',    border: 'border-l-gray-300' },
+  { key: 'future',              label: 'Future',               dot: 'bg-purple-400', bg: 'bg-purple-50',  border: 'border-l-purple-400' },
 ]
 
 interface Props {

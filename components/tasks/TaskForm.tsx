@@ -130,6 +130,7 @@ export default function TaskForm({ companyId, task, parentTaskId, knownNames = [
             <option value="waiting_on_response">Waiting on Response</option>
             <option value="blocked">Blocked</option>
             <option value="at_risk">Overdue / At Risk</option>
+            <option value="future">Future</option>
             <option value="done">Done</option>
           </select>
         </div>

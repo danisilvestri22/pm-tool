@@ -7,6 +7,7 @@ const config: Record<Status, { label: string; className: string }> = {
   blocked:            { label: 'Blocked',               className: 'bg-orange-50 text-orange-700' },
   at_risk:            { label: 'Overdue / At Risk',     className: 'bg-red-50 text-red-700' },
   done:               { label: 'Done',                  className: 'bg-green-50 text-green-700' },
+  future:             { label: 'Future',                className: 'bg-purple-50 text-purple-700' },
 }
 
 export default function StatusBadge({ status }: { status: Status }) {
